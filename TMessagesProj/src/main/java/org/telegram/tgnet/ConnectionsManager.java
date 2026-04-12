@@ -267,9 +267,6 @@ public class ConnectionsManager extends BaseController {
 
     private String getRegId() {
         String pushString = SharedConfig.pushString;
-        if (!TextUtils.isEmpty(pushString) && SharedConfig.pushType == PushListenerController.PUSH_TYPE_HUAWEI) {
-            pushString = "huawei://" + pushString;
-        }
         if (TextUtils.isEmpty(pushString) && !TextUtils.isEmpty(SharedConfig.pushStringStatus)) {
             pushString = SharedConfig.pushStringStatus;
         }
@@ -661,9 +658,6 @@ public class ConnectionsManager extends BaseController {
 
     public static void setRegId(String regId, @PushListenerController.PushType int type, String status) {
         String pushString = regId;
-        if (!TextUtils.isEmpty(pushString) && type == PushListenerController.PUSH_TYPE_HUAWEI) {
-            pushString = "huawei://" + pushString;
-        }
         if (TextUtils.isEmpty(pushString) && !TextUtils.isEmpty(status)) {
             pushString = status;
         }

@@ -10461,7 +10461,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     starsRow = rowCount++;
                 }
                 StarsController.getInstance(currentAccount, true).getBalance();
-                if (ApplicationLoader.isBetaBuild() || ApplicationLoader.isStandaloneBuild() || ApplicationLoader.isHuaweiStoreBuild() || (StarsController.getInstance(currentAccount, true).balanceAvailable() && (StarsController.getInstance(currentAccount, true).hasTransactions() || StarsController.getInstance(currentAccount, true).getBalance().positive()))) {
+                if (ApplicationLoader.isBetaBuild() || ApplicationLoader.isStandaloneBuild() || (StarsController.getInstance(currentAccount, true).balanceAvailable() && (StarsController.getInstance(currentAccount, true).hasTransactions() || StarsController.getInstance(currentAccount, true).getBalance().positive()))) {
                     tonRow = rowCount++;
                 }
                 if (!getMessagesController().premiumFeaturesBlocked()) {
@@ -15958,12 +15958,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             fragment.setMessageObject(new MessageObject(UserConfig.selectedAccount, message, false, false));
             presentFragment(fragment);
         } else {
-            String domain;
-            if (BuildVars.isHuaweiStoreApp()) {
-                domain = "mapapp://navigation";
-            } else {
-                domain = "http://maps.google.com/maps";
-            }
+            String domain = "http://maps.google.com/maps";
 //                    if (myLocation != null) {
 //                        try {
 //                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(String.format(Locale.US, domain + "?saddr=%f,%f&daddr=%f,%f", myLocation.getLatitude(), myLocation.getLongitude(), daddrLat, daddrLong)));

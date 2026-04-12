@@ -32,10 +32,7 @@ public class BuildVars {
     // SafetyNet key for Google Identity SDK, set it to empty to disable
     public static String SAFETYNET_KEY = "AIzaSyDqt8P-7F7CPCseMkOiVRgb1LY8RN1bvH8";
     public static String PLAYSTORE_APP_URL = "https://play.google.com/store/apps/details?id=org.telegram.messenger";
-    public static String HUAWEI_STORE_URL = "https://appgallery.huawei.com/app/C101184875";
     public static String GOOGLE_AUTH_CLIENT_ID = "760348033671-81kmi3pi84p11ub8hp9a1funsv0rn2p9.apps.googleusercontent.com";
-
-    public static String HUAWEI_APP_ID = "101184875";
 
     // You can use this flag to disable Google Play Billing (If you're making fork and want it to be in Google Play)
     public static boolean IS_BILLING_UNAVAILABLE = false;
@@ -60,7 +57,7 @@ public class BuildVars {
     }
 
     public static boolean useInvoiceBilling() {
-        return BillingController.billingClientEmpty || DEBUG_VERSION && false || ApplicationLoader.isStandaloneBuild() || isBetaApp() && false || isHuaweiStoreApp() || hasDirectCurrency();
+        return BillingController.billingClientEmpty || DEBUG_VERSION && false || ApplicationLoader.isStandaloneBuild() || isBetaApp() && false || hasDirectCurrency();
     }
 
     private static boolean hasDirectCurrency() {
@@ -87,10 +84,6 @@ public class BuildVars {
         return betaApp;
     }
 
-
-    public static boolean isHuaweiStoreApp() {
-        return ApplicationLoader.isHuaweiStoreBuild();
-    }
 
     public static String getSmsHash() {
         return ApplicationLoader.isStandaloneBuild() ? "w0lkcmTZkKh" : (DEBUG_VERSION ? "O2P2z+/jBpJ" : "oLeq9AcOZkT");

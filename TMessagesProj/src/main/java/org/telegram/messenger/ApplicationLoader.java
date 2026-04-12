@@ -124,10 +124,6 @@ public class ApplicationLoader extends Application {
         return null;
     }
 
-    public static boolean isHuaweiStoreBuild() {
-        return applicationLoaderInstance.isHuaweiBuild();
-    }
-
     public static boolean isStandaloneBuild() {
         return applicationLoaderInstance.isStandalone();
     }
@@ -138,10 +134,6 @@ public class ApplicationLoader extends Application {
 
     public static boolean isAndroidTestEnvironment() {
         return applicationLoaderInstance.isAndroidTestEnv();
-    }
-
-    protected boolean isHuaweiBuild() {
-        return false;
     }
 
     protected boolean isStandalone() {

@@ -10,6 +10,9 @@ TMessagesProj/jniRes/
 **/.DS_Store
 TMessagesProj/afat/
 TMessagesProj_App/afat/
-TMessagesProj_AppHockeyApp/afat/
-TMessagesProj_AppStandalone/afat/
-TMessagesProj_AppHuawei/afat/
+
+# Removed upstream modules (do not re-track after upstream merge)
+TMessagesProj_AppHuawei/
+TMessagesProj_AppHockeyApp/
+TMessagesProj_AppStandalone/
+TMessagesProj_AppTests/
