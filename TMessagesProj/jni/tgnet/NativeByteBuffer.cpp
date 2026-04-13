@@ -8,6 +8,7 @@
 
 #include <memory.h>
 #include <stdlib.h>
+#include <openssl/mem.h>
 #include "NativeByteBuffer.h"
 #include "FileLog.h"
 #include "ByteArray.h"
@@ -74,6 +75,7 @@ NativeByteBuffer::~NativeByteBuffer() {
     }
 #endif
     if (bufferOwner && !sliced && buffer != nullptr) {
+        OPENSSL_cleanse(buffer, _capacity);
         delete[] buffer;
         buffer = nullptr;
     }

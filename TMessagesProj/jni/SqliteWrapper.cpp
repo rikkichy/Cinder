@@ -1,5 +1,6 @@
 #include <cstring>
 #include <jni.h>
+#include <openssl/mem.h>
 #include "sqlite/sqlite3.h"
 #include "tgnet/NativeByteBuffer.h"
 #include "tgnet/BuffersStorage.h"
@@ -139,7 +140,7 @@ JNIEXPORT void Java_org_telegram_SQLite_SQLiteDatabase_commitTransaction(JNIEnv 
     sqlite3_exec(handle, "COMMIT", 0, 0, 0);
 }
 
-JNIEXPORT jlong Java_org_telegram_SQLite_SQLiteDatabase_opendb(JNIEnv *env, jobject object, jstring fileName, jstring tempDir) {
+JNIEXPORT jlong Java_org_telegram_SQLite_SQLiteDatabase_opendb(JNIEnv *env, jobject object, jstring fileName, jstring tempDir, jbyteArray key) {
     char const *fileNameStr = env->GetStringUTFChars(fileName, 0);
     char const *tempDirStr = env->GetStringUTFChars(tempDir, 0);
 
@@ -154,6 +155,20 @@ JNIEXPORT jlong Java_org_telegram_SQLite_SQLiteDatabase_opendb(JNIEnv *env, jobj
     int err = sqlite3_open(fileNameStr, &handle);
     if (SQLITE_OK != err) {
         throw_sqlite3_exception(env, handle, err);
+    }
+    if (key != nullptr && SQLITE_OK == err) {
+        jsize keyLen = env->GetArrayLength(key);
+        if (keyLen > 0) {
+            jbyte *keyBytes = env->GetByteArrayElements(key, NULL);
+            if (keyBytes != nullptr) {
+                err = sqlite3_key(handle, keyBytes, (int) keyLen);
+                OPENSSL_cleanse(keyBytes, keyLen);
+                env->ReleaseByteArrayElements(key, keyBytes, JNI_ABORT);
+                if (SQLITE_OK != err) {
+                    throw_sqlite3_exception(env, handle, err);
+                }
+            }
+        }
     }
     if (fileNameStr != 0) {
         env->ReleaseStringUTFChars(fileName, fileNameStr);

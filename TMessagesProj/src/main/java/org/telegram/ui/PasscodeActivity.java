@@ -48,6 +48,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
+import org.telegram.messenger.DatabaseKeyManager;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.NotificationCenter;
@@ -960,6 +961,16 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
             SharedConfig.allowScreenCapture = true;
             SharedConfig.passcodeType = currentPasswordType;
             SharedConfig.saveConfig();
+
+            try {
+                byte[] passcodeBytes = firstPassword.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                    DatabaseKeyManager.getInstance(a).onPasscodeSet(passcodeBytes);
+                }
+                java.util.Arrays.fill(passcodeBytes, (byte) 0);
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
 
             passwordEditText.clearFocus();
             AndroidUtilities.hideKeyboard(passwordEditText);

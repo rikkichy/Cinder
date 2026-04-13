@@ -8,6 +8,7 @@
 
 #include <stdlib.h>
 #include <memory.h>
+#include <openssl/mem.h>
 #include "ByteArray.h"
 #include "FileLog.h"
 
@@ -48,6 +49,7 @@ ByteArray::ByteArray(uint8_t *buffer, uint32_t len) {
 
 ByteArray::~ByteArray() {
     if (bytes != nullptr) {
+        OPENSSL_cleanse(bytes, length);
         delete[] bytes;
         bytes = nullptr;
     }
@@ -55,6 +57,7 @@ ByteArray::~ByteArray() {
 
 void ByteArray::alloc(uint32_t len) {
     if (bytes != nullptr) {
+        OPENSSL_cleanse(bytes, length);
         delete[] bytes;
         bytes = nullptr;
     }

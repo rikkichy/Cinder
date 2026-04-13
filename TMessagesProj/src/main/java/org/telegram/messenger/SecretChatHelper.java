@@ -670,6 +670,7 @@ public class SecretChatHelper extends BaseController {
                 MessageKeyData keyData = MessageKeyData.generateMessageKeyData(chat.auth_key, messageKey, incoming, 2);
 
                 Utilities.aesIgeEncryption(dataForEncryption.buffer, keyData.aesKey, keyData.aesIv, true, false, 0, dataForEncryption.limit());
+                keyData.zeroize();
 
                 NativeByteBuffer data = new NativeByteBuffer(8 + messageKey.length + dataForEncryption.length());
                 dataForEncryption.position(0);
@@ -1540,6 +1541,7 @@ public class SecretChatHelper extends BaseController {
             }
         }
 
+        keyData.zeroize();
         return error == 0;
     }
 

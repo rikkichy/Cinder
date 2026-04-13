@@ -15,6 +15,11 @@ public class MessageKeyData {
     public byte[] aesKey;
     public byte[] aesIv;
 
+    public void zeroize() {
+        if (aesKey != null) { java.util.Arrays.fill(aesKey, (byte) 0); aesKey = null; }
+        if (aesIv != null) { java.util.Arrays.fill(aesIv, (byte) 0); aesIv = null; }
+    }
+
     public static MessageKeyData generateMessageKeyData(byte[] authKey, byte[] messageKey, boolean incoming, int version) {
         MessageKeyData keyData = new MessageKeyData();
         if (authKey == null || authKey.length == 0) {

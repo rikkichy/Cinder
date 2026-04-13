@@ -312,7 +312,7 @@ target_compile_definitions(flac PUBLIC
 target_include_directories(flac PUBLIC
         exoplayer/libFLAC/include)
 
-#sqlite
+#sqlite (SQLCipher 4.5.0, based on SQLite 3.36.0)
 add_library(sqlite STATIC
         sqlite/sqlite3.c)
 target_compile_options(sqlite PUBLIC
@@ -320,7 +320,13 @@ target_compile_options(sqlite PUBLIC
 set_target_properties(sqlite PROPERTIES
         ANDROID_ARM_MODE arm)
 target_compile_definitions(sqlite PUBLIC
-        NULL=0 SOCKLEN_T=socklen_t LOCALE_NOT_USED ANDROID_NDK DISABLE_IMPORTGL AVOID_TABLES ANDROID_TILE_BASED_DECODE HAVE_STRCHRNUL=0 ANDROID_ARMV6_IDCT)
+        NULL=0 SOCKLEN_T=socklen_t LOCALE_NOT_USED ANDROID_NDK DISABLE_IMPORTGL AVOID_TABLES ANDROID_TILE_BASED_DECODE HAVE_STRCHRNUL=0 ANDROID_ARMV6_IDCT
+        SQLITE_HAS_CODEC SQLCIPHER_CRYPTO_OPENSSL SQLITE_TEMP_STORE=2
+        OPENSSL_VERSION_TEXT="BoringSSL")
+target_include_directories(sqlite PUBLIC
+        boringssl/include/)
+target_link_libraries(sqlite
+        crypto)
 
 #breakpad
 add_library(breakpad STATIC

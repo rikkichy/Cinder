@@ -6,6 +6,7 @@
  * Copyright Nikolai Kudashov, 2015-2018.
  */
 
+#include <openssl/mem.h>
 #include "BuffersStorage.h"
 #include "FileLog.h"
 #include "NativeByteBuffer.h"
@@ -83,6 +84,9 @@ NativeByteBuffer *BuffersStorage::getFreeBuffer(uint32_t size) {
 void BuffersStorage::reuseFreeBuffer(NativeByteBuffer *buffer) {
     if (buffer == nullptr) {
         return;
+    }
+    if (buffer->bytes() != nullptr && buffer->capacity() > 0) {
+        OPENSSL_cleanse(buffer->bytes(), buffer->capacity());
     }
     std::vector<NativeByteBuffer *> *arrayToReuse = nullptr;
     uint32_t capacity = buffer->capacity();

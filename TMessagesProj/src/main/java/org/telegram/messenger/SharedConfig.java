@@ -830,11 +830,13 @@ public class SharedConfig {
         if (passcodeSalt.length == 0) {
             boolean result = Utilities.MD5(passcode).equals(passcodeHash);
             if (result) {
+                byte[] passcodeBytes = null;
+                byte[] bytes = null;
                 try {
                     passcodeSalt = new byte[16];
                     Utilities.random.nextBytes(passcodeSalt);
-                    byte[] passcodeBytes = passcode.getBytes("UTF-8");
-                    byte[] bytes = new byte[32 + passcodeBytes.length];
+                    passcodeBytes = passcode.getBytes("UTF-8");
+                    bytes = new byte[32 + passcodeBytes.length];
                     System.arraycopy(passcodeSalt, 0, bytes, 0, 16);
                     System.arraycopy(passcodeBytes, 0, bytes, 16, passcodeBytes.length);
                     System.arraycopy(passcodeSalt, 0, bytes, passcodeBytes.length + 16, 16);
@@ -842,13 +844,18 @@ public class SharedConfig {
                     saveConfig();
                 } catch (Exception e) {
                     FileLog.e(e);
+                } finally {
+                    if (passcodeBytes != null) java.util.Arrays.fill(passcodeBytes, (byte) 0);
+                    if (bytes != null) java.util.Arrays.fill(bytes, (byte) 0);
                 }
             }
             return result;
         } else {
+            byte[] passcodeBytes = null;
+            byte[] bytes = null;
             try {
-                byte[] passcodeBytes = passcode.getBytes("UTF-8");
-                byte[] bytes = new byte[32 + passcodeBytes.length];
+                passcodeBytes = passcode.getBytes("UTF-8");
+                bytes = new byte[32 + passcodeBytes.length];
                 System.arraycopy(passcodeSalt, 0, bytes, 0, 16);
                 System.arraycopy(passcodeBytes, 0, bytes, 16, passcodeBytes.length);
                 System.arraycopy(passcodeSalt, 0, bytes, passcodeBytes.length + 16, 16);
@@ -856,6 +863,9 @@ public class SharedConfig {
                 return passcodeHash.equals(hash);
             } catch (Exception e) {
                 FileLog.e(e);
+            } finally {
+                if (passcodeBytes != null) java.util.Arrays.fill(passcodeBytes, (byte) 0);
+                if (bytes != null) java.util.Arrays.fill(bytes, (byte) 0);
             }
         }
         return false;
@@ -870,6 +880,9 @@ public class SharedConfig {
         badPasscodeTries = 0;
         passcodeHash = "";
         passcodeSalt = new byte[0];
+        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+            DatabaseKeyManager.getInstance(a).onPasscodeRemoved();
+        }
         autoLockIn = 60 * 60;
         lastPauseTime = 0;
         useFingerprintLock = true;

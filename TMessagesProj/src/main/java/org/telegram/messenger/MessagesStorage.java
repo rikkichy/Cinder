@@ -316,7 +316,12 @@ public class MessagesStorage extends BaseController {
             createTable = true;
         }
         try {
-            database = new SQLiteDatabase(cacheFile.getPath());
+            byte[] dek = DatabaseKeyManager.getInstance(currentAccount).getDek();
+            try {
+                database = new SQLiteDatabase(cacheFile.getPath(), dek);
+            } finally {
+                if (dek != null) java.util.Arrays.fill(dek, (byte) 0);
+            }
             database.executeFast("PRAGMA secure_delete = ON").stepThis().dispose();
             database.executeFast("PRAGMA temp_store = MEMORY").stepThis().dispose();
             database.executeFast("PRAGMA journal_mode = WAL").stepThis().dispose();

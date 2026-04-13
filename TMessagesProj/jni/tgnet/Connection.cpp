@@ -7,6 +7,7 @@
  */
 
 #include <openssl/rand.h>
+#include <openssl/mem.h>
 #include <stdlib.h>
 #include <cstring>
 #include <openssl/sha.h>
@@ -36,6 +37,13 @@ Connection::Connection(Datacenter *datacenter, ConnectionType type, int8_t num) 
 }
 
 Connection::~Connection() {
+    OPENSSL_cleanse(&encryptKey, sizeof(encryptKey));
+    OPENSSL_cleanse(encryptIv, sizeof(encryptIv));
+    OPENSSL_cleanse(encryptCount, sizeof(encryptCount));
+    OPENSSL_cleanse(&decryptKey, sizeof(decryptKey));
+    OPENSSL_cleanse(decryptIv, sizeof(decryptIv));
+    OPENSSL_cleanse(decryptCount, sizeof(decryptCount));
+    OPENSSL_cleanse(temp, sizeof(temp));
     if (reconnectTimer != nullptr) {
         reconnectTimer->stop();
         delete reconnectTimer;
