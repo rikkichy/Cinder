@@ -1,11 +1,3 @@
-/*
- * This is the source code of Telegram for Android v. 5.x.x.
- * It is licensed under GNU GPL v. 2 or later.
- * You should have received a copy of the license in this archive (see LICENSE).
- *
- * Copyright Nikolai Kudashov, 2013-2018.
- */
-
 package org.telegram.messenger;
 
 import androidx.annotation.NonNull;
@@ -18,7 +10,7 @@ import java.util.Map;
 public class GcmPushListenerService extends FirebaseMessagingService {
 
     @Override
-    public void onMessageReceived(RemoteMessage message) {
+    public void onMessageReceived(@NonNull RemoteMessage message) {
         String from = message.getFrom();
         Map<String, String> data = message.getData();
         long time = message.getSentTime();

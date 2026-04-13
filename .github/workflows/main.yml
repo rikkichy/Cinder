@@ -67,7 +67,7 @@ jobs:
           echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "${RUNNER_TEMP}/keystore.jks"
           echo "ANDROID_KEYSTORE_PATH=${RUNNER_TEMP}/keystore.jks" >> "$GITHUB_ENV"
 
-      - name: Build Release APK
+      - name: Build FCM Release APK
         env:
           ANDROID_KEYSTORE_PATH: ${{ env.ANDROID_KEYSTORE_PATH }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -75,17 +75,28 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           APP_ID: ${{ secrets.APP_ID }}
           APP_HASH: ${{ secrets.APP_HASH }}
-        run: ./gradlew :TMessagesProj_App:assembleAfatRelease
+        run: ./gradlew :TMessagesProj_App:assembleFcmAfatRelease
+
+      - name: Build UnifiedPush Release APK
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ env.ANDROID_KEYSTORE_PATH }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          APP_ID: ${{ secrets.APP_ID }}
+          APP_HASH: ${{ secrets.APP_HASH }}
+        run: ./gradlew :TMessagesProj_App:assembleUnifiedpushAfatRelease
 
       - name: Attest APK provenance
         uses: actions/attest-build-provenance@v2
         with:
-          subject-path: TMessagesProj_App/build/outputs/apk/afat/release/*.apk
+          subject-path: TMessagesProj_App/build/outputs/apk/*Afat/release/*.apk
 
-      - name: Collect and rename APK
+      - name: Collect and rename APKs
         run: |
           mkdir -p dist
-          cp TMessagesProj_App/build/outputs/apk/afat/release/*.apk "dist/cinder-v${{ env.NEW_VERSION }}.apk"
+          cp TMessagesProj_App/build/outputs/apk/fcmAfat/release/*.apk "dist/cinder-v${{ env.NEW_VERSION }}.apk"
+          cp TMessagesProj_App/build/outputs/apk/unifiedpushAfat/release/*.apk "dist/cinder-v${{ env.NEW_VERSION }}-unifiedpush.apk"
 
       - name: Commit version bump
         run: |

@@ -113,7 +113,7 @@ public class ApplicationLoader extends Application {
     }
 
     protected PushListenerController.IPushListenerServiceProvider onCreatePushProvider() {
-        return PushListenerController.GooglePushListenerServiceProvider.INSTANCE;
+        return PushProviderDelegate.getProvider();
     }
 
     public static String getApplicationId() {
@@ -378,7 +378,7 @@ public class ApplicationLoader extends Application {
                 if (BuildVars.LOGS_ENABLED) {
                     FileLog.d("No valid " + getPushProvider().getLogTitle() + " APK found.");
                 }
-                SharedConfig.pushStringStatus = "__NO_GOOGLE_PLAY_SERVICES__";
+                SharedConfig.pushStringStatus = "__NO_PUSH_SERVICES__";
                 PushListenerController.sendRegistrationToServer(getPushProvider().getPushType(), null);
             }
         }, 1000);

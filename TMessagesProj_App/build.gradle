@@ -10,7 +10,6 @@ configurations {
 }
 
 configurations.all {
-    exclude group: 'com.google.firebase', module: 'firebase-core'
     exclude group: 'androidx.recyclerview', module: 'recyclerview'
 }
 
@@ -93,10 +92,17 @@ android {
         manifest.srcFile '../TMessagesProj/config/release/AndroidManifest.xml'
     }
 
-    flavorDimensions "minApi"
+    flavorDimensions "push", "minApi"
 
     productFlavors {
+        fcm {
+            dimension "push"
+        }
+        unifiedpush {
+            dimension "push"
+        }
         bundleAfat {
+            dimension "minApi"
             ndk {
                 abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
             }
@@ -106,6 +112,7 @@ android {
             buildConfigField "boolean", "BUNDLE", "true"
         }
         bundleAfat_SDK23 {
+            dimension "minApi"
             ndk {
                 abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
             }
@@ -122,6 +129,7 @@ android {
             buildConfigField "boolean", "BUNDLE", "true"
         }
         afat {
+            dimension "minApi"
             ndk {
                 abiFilters "arm64-v8a"
             }
@@ -143,7 +151,8 @@ android {
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
             outputFileName = "app.apk"
-            output.versionCodeOverride = defaultConfig.versionCode * 10 + variant.productFlavors.get(0).abiVersionCode
+            def minApiFlavor = variant.productFlavors.find { it.ext.has('abiVersionCode') }
+            output.versionCodeOverride = defaultConfig.versionCode * 10 + (minApiFlavor?.ext?.abiVersionCode ?: 0)
         }
     }
 
@@ -183,3 +192,12 @@ android {
 }
 
 apply plugin: 'com.google.gms.google-services'
+
+afterEvaluate {
+    tasks.matching { task ->
+        task.name.matches("process.*GoogleServices") && task.name.toLowerCase().contains("unifiedpush")
+    }.configureEach {
+        enabled = false
+    }
+}
+

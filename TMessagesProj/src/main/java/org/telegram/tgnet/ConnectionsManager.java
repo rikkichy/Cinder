@@ -20,7 +20,6 @@ import com.google.android.play.core.integrity.IntegrityManager;
 import com.google.android.play.core.integrity.IntegrityManagerFactory;
 import com.google.android.play.core.integrity.IntegrityTokenRequest;
 import com.google.android.play.core.integrity.IntegrityTokenResponse;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -271,7 +270,7 @@ public class ConnectionsManager extends BaseController {
             pushString = SharedConfig.pushStringStatus;
         }
         if (TextUtils.isEmpty(pushString)) {
-            String tag = SharedConfig.pushType == PushListenerController.PUSH_TYPE_FIREBASE ? "FIREBASE" : "HUAWEI";
+            String tag = SharedConfig.pushType == PushListenerController.PUSH_TYPE_FIREBASE ? "FIREBASE" : SharedConfig.pushType == PushListenerController.PUSH_TYPE_UNIFIED_PUSH ? "UNIFIEDPUSH" : "UNKNOWN";
             pushString = SharedConfig.pushStringStatus = "__" + tag + "_GENERATING_SINCE_" + getCurrentTime() + "__";
         }
         return pushString;
@@ -662,7 +661,7 @@ public class ConnectionsManager extends BaseController {
             pushString = status;
         }
         if (TextUtils.isEmpty(pushString)) {
-            String tag = type == PushListenerController.PUSH_TYPE_FIREBASE ? "FIREBASE" : "HUAWEI";
+            String tag = type == PushListenerController.PUSH_TYPE_FIREBASE ? "FIREBASE" : type == PushListenerController.PUSH_TYPE_UNIFIED_PUSH ? "UNIFIEDPUSH" : "UNKNOWN";
             pushString = SharedConfig.pushStringStatus = "__" + tag + "_GENERATING_SINCE_" + getInstance(0).getCurrentTime() + "__";
         }
         for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
@@ -859,11 +858,11 @@ public class ConnectionsManager extends BaseController {
                     currentTask = task;
                 } else {
                     if (BuildVars.LOGS_ENABLED) {
-                        FileLog.d("start firebase task");
+                        FileLog.d("firebase removed, falling back to dns txt task");
                     }
-                    FirebaseTask task = new FirebaseTask(currentAccount);
+                    GoogleDnsLoadTask task = new GoogleDnsLoadTask(currentAccount);
                     task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, null, null, null);
-                    FileLog.d("12. currentTask = firebase");
+                    FileLog.d("12. currentTask = dnstxt (firebase fallback)");
                     currentTask = task;
                 }
             });
@@ -1439,89 +1438,6 @@ public class ConnectionsManager extends BaseController {
         }
     }
 
-    private static class FirebaseTask extends AsyncTask<Void, Void, NativeByteBuffer> {
-
-        private int currentAccount;
-        private FirebaseRemoteConfig firebaseRemoteConfig;
-
-        public FirebaseTask(int instance) {
-            super();
-            currentAccount = instance;
-        }
-
-        protected NativeByteBuffer doInBackground(Void... voids) {
-            try {
-                if (native_isTestBackend(currentAccount) != 0) {
-                    throw new Exception("test backend");
-                }
-                firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
-                String currentValue = firebaseRemoteConfig.getString("ipconfigv3");
-                if (BuildVars.LOGS_ENABLED) {
-                    FileLog.d("current firebase value = " + currentValue);
-                }
-
-                firebaseRemoteConfig.fetch(0).addOnCompleteListener(finishedTask -> {
-                    final boolean success = finishedTask.isSuccessful();
-                    Utilities.stageQueue.postRunnable(() -> {
-                        if (success) {
-                            firebaseRemoteConfig.activate().addOnCompleteListener(finishedTask2 -> {
-                                FileLog.d("6. currentTask = null");
-                                currentTask = null;
-                                String config = firebaseRemoteConfig.getString("ipconfigv3");
-                                if (!TextUtils.isEmpty(config)) {
-                                    byte[] bytes = Base64.decode(config, Base64.DEFAULT);
-                                    try {
-                                        NativeByteBuffer buffer = new NativeByteBuffer(bytes.length);
-                                        buffer.writeBytes(bytes);
-                                        int date = (int) (firebaseRemoteConfig.getInfo().getFetchTimeMillis() / 1000);
-                                        native_applyDnsConfig(currentAccount, buffer.address, AccountInstance.getInstance(currentAccount).getUserConfig().getClientPhone(), date);
-                                    } catch (Exception e) {
-                                        FileLog.e(e);
-                                    }
-                                } else {
-                                    if (BuildVars.LOGS_ENABLED) {
-                                        FileLog.d("failed to get firebase result");
-                                        FileLog.d("start dns txt task");
-                                    }
-                                    GoogleDnsLoadTask task = new GoogleDnsLoadTask(currentAccount);
-                                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, null, null, null);
-                                    FileLog.d("7. currentTask = GoogleDnsLoadTask");
-                                    currentTask = task;
-                                }
-                            });
-                        } else {
-                            if (BuildVars.LOGS_ENABLED) {
-                                FileLog.d("failed to get firebase result 2");
-                                FileLog.d("start dns txt task");
-                            }
-                            GoogleDnsLoadTask task = new GoogleDnsLoadTask(currentAccount);
-                            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, null, null, null);
-                            FileLog.d("7. currentTask = GoogleDnsLoadTask");
-                            currentTask = task;
-                        }
-                    });
-                });
-            } catch (Throwable e) {
-                Utilities.stageQueue.postRunnable(() -> {
-                    if (BuildVars.LOGS_ENABLED) {
-                        FileLog.d("failed to get firebase result");
-                        FileLog.d("start dns txt task");
-                    }
-                    GoogleDnsLoadTask task = new GoogleDnsLoadTask(currentAccount);
-                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, null, null, null);
-                    FileLog.d("8. currentTask = GoogleDnsLoadTask");
-                    currentTask = task;
-                });
-                FileLog.e(e, false);
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(NativeByteBuffer result) {
-
-        }
-    }
 
     public static long lastPremiumFloodWaitShown = 0;
     @Keep
