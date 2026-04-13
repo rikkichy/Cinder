@@ -8312,41 +8312,8 @@ public class ChatActivity extends BaseFragment implements
             }
         });
         bottomChannelButtonsLayout.setButtonOnFullyVisibleListener(ChatActivityChannelButtonsLayout.BUTTON_GIFT, (v, id, firstTime) -> {
-            if (bottomGiftHintView == null && firstTime && MessagesController.getGlobalMainSettings().getInt("channelgifthint", 0) < 2 && (bottomSuggestHintView == null || !bottomSuggestHintView.shown())) {
-                AndroidUtilities.runOnUIThread(() -> {
-                    if (getContext() == null) return;
-                    final float offset = windowInsetsStateHolder.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom / AndroidUtilities.density;
-                    final float translate = (contentView.getWidth() - (v.getX() + v.getWidth()) + v.getWidth() / 2f) / AndroidUtilities.density;
-
-                    bottomGiftHintView = new HintView2(getContext(), HintView2.DIRECTION_BOTTOM);
-                    bottomGiftHintView.setPadding(dp(7.33f), 0, dp(7.33f), 0);
-                    bottomGiftHintView.setMultilineText(false);
-                    bottomGiftHintView.setText(getString(R.string.Gift2ChannelSendHint));
-                    bottomGiftHintView.setJoint(1, -translate + 7.33f);
-                    contentView.addView(bottomGiftHintView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 100, Gravity.BOTTOM | Gravity.FILL_HORIZONTAL, 0, 0, 0, offset + 50));
-                    bottomGiftHintView.setOnHiddenListener(() -> AndroidUtilities.removeFromParent(bottomGiftHintView));
-                    bottomGiftHintView.show();
-                    MessagesController.getGlobalMainSettings().edit().putInt("channelgifthint", MessagesController.getGlobalMainSettings().getInt("channelgifthint", 0) + 1).apply();
-                }, 400);
-            }
         });
         bottomChannelButtonsLayout.setButtonOnFullyVisibleListener(ChatActivityChannelButtonsLayout.BUTTON_DIRECT, (v, id, firstTime) -> {
-            if (bottomSuggestHintView == null && firstTime && MessagesController.getGlobalMainSettings().getInt("channelsuggesthint", 0) < 2) {
-                AndroidUtilities.runOnUIThread(() -> {
-                    if (getContext() == null) return;
-                    final float offset = windowInsetsStateHolder.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom / AndroidUtilities.density;
-                    final float translate = (contentView.getWidth() - (v.getX() + v.getWidth()) + v.getWidth() / 2f) / AndroidUtilities.density;
-
-                    bottomSuggestHintView = new HintView2(getContext(), HintView2.DIRECTION_BOTTOM);
-                    bottomSuggestHintView.setPadding(dp(7.33f), 0, dp(7.33f), 0);
-                    bottomSuggestHintView.setMultilineText(false);
-                    bottomSuggestHintView.setText(getString(R.string.Suggest2ChannelSendHint), true);
-                    bottomSuggestHintView.setJoint(1, -translate + 7.33f);
-                    contentView.addView(bottomSuggestHintView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 100, Gravity.BOTTOM | Gravity.FILL_HORIZONTAL, 0, 0, 0, offset + 50));
-                    bottomSuggestHintView.setOnHiddenListener(() -> AndroidUtilities.removeFromParent(bottomSuggestHintView));
-                    bottomSuggestHintView.show();
-                    MessagesController.getGlobalMainSettings().edit().putInt("channelsuggesthint", MessagesController.getGlobalMainSettings().getInt("channelsuggesthint", 0) + 1).apply();
-                }, 400);
             }
         });
         bottomChannelButtonsLayout.setOnButtonsTotalWidthChanged((l, r) -> {

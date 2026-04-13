@@ -2894,7 +2894,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             getMessagesController().getSavedMessagesController().preloadDialogs(true);
         }
 
-        BirthdayController.getInstance(currentAccount).check();
+        if (false) BirthdayController.getInstance(currentAccount).check();
         additionNavigationBarHeight = hasMainTabs ? dp(MAIN_TABS_HEIGHT_WITH_MARGINS) : 0;
         additionFloatingButtonOffset = hasMainTabs ? dp(DialogsActivity.MAIN_TABS_HEIGHT + DialogsActivity.MAIN_TABS_MARGIN) : 0;
 
@@ -6982,7 +6982,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     }
                 }, afterSignup && (hasNotContactsPermission || hasNotNotificationsPermission) ? 4000 : 0);
             }
-        } else if (!onlySelect && folderId == 0 && XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_SHOW_WHEN_LOCKED)) {
+        } else if (false && !onlySelect && folderId == 0 && XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_SHOW_WHEN_LOCKED)) {
             if (getParentActivity() == null) {
                 return;
             }
@@ -7010,7 +7010,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     })
                     .setNegativeButton(getString(R.string.ContactsPermissionAlertNotNow), (dialog, which) -> MessagesController.getGlobalNotificationsSettings().edit().putBoolean("askedAboutMiuiLockscreen", true).commit())
                     .create());
-        } else if (folderId == 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && !notificationManager.canUseFullScreenIntent()) {
+        } else if (false && folderId == 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && !notificationManager.canUseFullScreenIntent()) {
             if (getParentActivity() == null) {
                 return;
             }
@@ -10603,15 +10603,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     private String showingSuggestion;
 
     private void showNextSupportedSuggestion() {
-        if (showingSuggestion != null) {
-            return;
-        }
-        for (String suggestion : getMessagesController().pendingSuggestions) {
-            if (showSuggestion(suggestion)) {
-                showingSuggestion = suggestion;
-                return;
-            }
-        }
+        return;
     }
 
     private void onSuggestionDismiss() {
@@ -10640,20 +10632,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private void showFiltersHint() {
-        if (askingForPermissions || !getMessagesController().dialogFiltersLoaded || !getMessagesController().showFiltersTooltip || filterTabsView == null || !getMessagesController().getDialogFilters().isEmpty() || isPaused || !getUserConfig().filtersLoaded || inPreviewMode) {
-            return;
-        }
-        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
-        if (preferences.getBoolean("filterhint", false)) {
-            return;
-        }
-        preferences.edit().putBoolean("filterhint", true).apply();
-        AndroidUtilities.runOnUIThread(() -> {
-            UndoView undoView = getUndoView();
-            if (undoView != null) {
-                undoView.showWithAction(0, UndoView.ACTION_FILTERS_AVAILABLE, null, () -> presentFragment(new FiltersSetupActivity()));
-            }
-        }, 1000);
+        return;
     }
 
     private void setDialogsListFrozen(boolean frozen, boolean notify) {

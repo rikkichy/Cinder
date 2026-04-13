@@ -1347,11 +1347,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     }
 
     private void showUpdateActivity(int account, TLRPC.TL_help_appUpdate update, boolean check) {
-        if (blockingUpdateView == null) {
-            blockingUpdateView = new BlockingUpdateView(LaunchActivity.this);
-            drawerLayoutContainer.addView(blockingUpdateView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
-        }
-        blockingUpdateView.show(account, update, check);
+        return;
     }
 
     private void showTosActivity(int account, TLRPC.TL_help_termsOfService tos) {
