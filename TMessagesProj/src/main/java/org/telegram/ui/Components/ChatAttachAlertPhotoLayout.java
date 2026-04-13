@@ -2390,44 +2390,10 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
         }
         boolean old = deviceHasGoodCamera;
         boolean old2 = noCameraPermissions;
-        BaseFragment fragment = parentAlert.baseFragment;
-        if (fragment == null) {
-            fragment = LaunchActivity.getLastFragment();
-        }
-        if (fragment == null || fragment.getParentActivity() == null) {
-            return;
-        }
-        if (!SharedConfig.inappCamera) {
-            deviceHasGoodCamera = false;
-        } else {
-            if (Build.VERSION.SDK_INT >= 23) {
-                if (noCameraPermissions = (fragment.getParentActivity().checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)) {
-                    if (request) {
-                        try {
-                            parentAlert.baseFragment.getParentActivity().requestPermissions(new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE}, 17);
-                        } catch (Exception ignore) {
-
-                        }
-                    }
-                    deviceHasGoodCamera = false;
-                } else {
-                    if (request || SharedConfig.hasCameraCache) {
-                        CameraController.getInstance().initCamera(null);
-                    }
-                    deviceHasGoodCamera = CameraController.getInstance().isCameraInitied();
-                }
-            } else {
-                if (request || SharedConfig.hasCameraCache) {
-                    CameraController.getInstance().initCamera(null);
-                }
-                deviceHasGoodCamera = CameraController.getInstance().isCameraInitied();
-            }
-        }
+        deviceHasGoodCamera = false;
+        noCameraPermissions = true;
         if ((old != deviceHasGoodCamera || old2 != noCameraPermissions) && adapter != null) {
             adapter.notifyDataSetChanged();
-        }
-        if (!parentAlert.destroyed && parentAlert.isShowing() && deviceHasGoodCamera && parentAlert.getBackDrawable().getAlpha() != 0 && !cameraOpened) {
-            showCamera();
         }
     }
 

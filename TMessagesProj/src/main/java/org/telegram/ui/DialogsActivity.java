@@ -4724,7 +4724,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             }
         });
 
-        if (!isArchive() && initialDialogsType == DIALOGS_TYPE_DEFAULT) {
+        if (false && !isArchive() && initialDialogsType == DIALOGS_TYPE_DEFAULT) {
             if (MessagesController.getInstance(currentAccount).getMainSettings().getBoolean("storyhint", true)) {
                 storyHint = new HintView2(context, HintView2.DIRECTION_RIGHT)
                         .setRounding(8)
@@ -5907,7 +5907,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 MessagesController.getInstance(currentAccount).removeSuggestion(0, "SETUP_PASSKEY");
                 updateDialogsHint();
             });
-        } else if (folderId == 0 && getMessagesController().pendingSuggestions.contains("PREMIUM_GRACE")) {
+        } else if (false && folderId == 0 && getMessagesController().pendingSuggestions.contains("PREMIUM_GRACE")) {
             dialogsHintCellVisible = true;
             dialogsHintCell.setOnClickListener(v -> {
                 Browser.openUrl(getContext(), getMessagesController().premiumManageSubscriptionUrl);
@@ -5939,7 +5939,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 MessagesController.getInstance(currentAccount).removeSuggestion(0, suggestion.suggestion);
                 updateDialogsHint();
             });
-        } else if (isStarsSubscriptionHintVisible()) {
+        } else if (false && isStarsSubscriptionHintVisible()) {
             StarsController c = StarsController.getInstance(currentAccount);
             dialogsHintCellVisible = true;
             StringBuilder s = new StringBuilder();
@@ -7242,18 +7242,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         super.onBecomeFullyVisible();
         if (isArchive()) {
             SharedPreferences preferences = MessagesController.getGlobalMainSettings();
-            boolean showArchiveHint = preferences.getBoolean("archivehint", true);
-            final boolean isEmpty = getDialogsArray(currentAccount, initialDialogsType, folderId, false).isEmpty();
-            if (showArchiveHint && isEmpty) {
-                showArchiveHint = false;
-                MessagesController.getGlobalMainSettings().edit().putBoolean("archivehint", false).commit();
-            }
-            if (showArchiveHint) {
-                preferences.edit().putBoolean("archivehint", false).commit();
-                showArchiveHelp();
-            }
+            boolean showArchiveHint = false;
         }
-        if (canShowStoryHint && !storyHintShown && storyHint != null && storiesEnabled) {
+        if (false && canShowStoryHint && !storyHintShown && storyHint != null && storiesEnabled) {
             storyHintShown = true;
             canShowStoryHint = false;
             storyHint.show();

@@ -8314,7 +8314,6 @@ public class ChatActivity extends BaseFragment implements
         bottomChannelButtonsLayout.setButtonOnFullyVisibleListener(ChatActivityChannelButtonsLayout.BUTTON_GIFT, (v, id, firstTime) -> {
         });
         bottomChannelButtonsLayout.setButtonOnFullyVisibleListener(ChatActivityChannelButtonsLayout.BUTTON_DIRECT, (v, id, firstTime) -> {
-            }
         });
         bottomChannelButtonsLayout.setOnButtonsTotalWidthChanged((l, r) -> {
             chatInputViewsContainer.setInputBubbleOffsets(l, r);
@@ -24274,6 +24273,9 @@ public class ChatActivity extends BaseFragment implements
     private Pattern sponsoredUrlPattern;
     private MessageObject botSponsoredMessage;
     private void addSponsoredMessages(boolean animated) {
+        return;
+    }
+    private void addSponsoredMessages_disabled(boolean animated) {
         if (sponsoredMessagesAdded || chatMode != 0 || !ChatObject.isChannel(currentChat) && !UserObject.isBot(currentUser) || !forwardEndReached[0] || getUserConfig().isPremium() && getMessagesController().isSponsoredDisabled() || isReport()) {
             return;
         }
@@ -28336,7 +28338,7 @@ public class ChatActivity extends BaseFragment implements
         boolean showTranslate = (
             getUserConfig().isPremium() || currentChat != null && currentChat.autotranslation ?
                 getMessagesController().getTranslateController().isDialogTranslatable(getDialogId()) && !getMessagesController().getTranslateController().isTranslateDialogHidden(getDialogId()) :
-                !getMessagesController().premiumFeaturesBlocked() && preferences.getInt("dialog_show_translate_count" + did, 5) <= 0
+                false
         ) || DEBUG_TOP_PANELS;
         boolean showAddProfilePicture = UserObject.isBot(currentUser) && currentUser.bot_can_edit && currentUser.photo == null;
         boolean showBizBot = currentEncryptedChat == null && getUserConfig().isPremium() && preferences.getLong("dialog_botid" + did, 0) != 0 || DEBUG_TOP_PANELS;
