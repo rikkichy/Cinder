@@ -3257,7 +3257,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             allowReadPhoneNumbers = getParentActivity().checkSelfPermission(Manifest.permission.READ_PHONE_NUMBERS) == PackageManager.PERMISSION_GRANTED;
                         }
-                        if (checkShowPermissions && (!allowCall || !allowReadPhoneNumbers)) {
+                        if (false && checkShowPermissions && (!allowCall || !allowReadPhoneNumbers)) {
                             permissionsShowItems.clear();
                             if (!allowCall) {
                                 permissionsShowItems.add(Manifest.permission.READ_PHONE_STATE);
