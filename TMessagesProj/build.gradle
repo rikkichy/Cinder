@@ -176,8 +176,7 @@ def getApiCredential(String key) {
         def props = new Properties()
         props.load(new FileInputStream(propsFile))
         return props[key] ?: ""
-    } else {
-        return ""
     }
+    return System.getenv(key) ?: ""
 }
 apply plugin: 'com.google.gms.google-services'

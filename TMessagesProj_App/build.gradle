@@ -50,12 +50,12 @@ android {
         }
 
         release {
-            def ksPath = System.getenv("ANDROID_KEYSTORE_PATH")
+            def ksPath = findProperty("ANDROID_KEYSTORE_PATH") ?: System.getenv("ANDROID_KEYSTORE_PATH")
             if (ksPath != null && !ksPath.isEmpty()) {
                 storeFile file(ksPath)
-                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
-                keyAlias System.getenv("ANDROID_KEY_ALIAS")
-                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+                storePassword findProperty("ANDROID_KEYSTORE_PASSWORD") ?: System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias findProperty("ANDROID_KEY_ALIAS") ?: System.getenv("ANDROID_KEY_ALIAS") ?: "cinder"
+                keyPassword findProperty("ANDROID_KEY_PASSWORD") ?: System.getenv("ANDROID_KEY_PASSWORD")
             }
         }
     }
