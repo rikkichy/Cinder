@@ -221,6 +221,10 @@ public class SharedConfig {
 
     public static String directShareHash;
 
+    public static final int PASSCODE_KDF_LEGACY_SHA256 = 0;
+    public static final int PASSCODE_KDF_PBKDF2 = 1;
+    private static final int PBKDF2_ITERATIONS = 100_000;
+
     @PasscodeType
     public static int passcodeType;
     public static String passcodeHash = "";
@@ -228,6 +232,7 @@ public class SharedConfig {
     public static long lastUptimeMillis;
     public static int badPasscodeTries;
     public static byte[] passcodeSalt = new byte[0];
+    public static int passcodeKdfVersion = PASSCODE_KDF_LEGACY_SHA256;
     public static boolean appLocked;
     public static int autoLockIn = 60 * 60;
 
@@ -438,6 +443,7 @@ public class SharedConfig {
                 editor.putString("passcodeSalt", passcodeSalt.length > 0 ? Base64.encodeToString(passcodeSalt, Base64.DEFAULT) : "");
                 editor.putBoolean("appLocked", appLocked);
                 editor.putInt("passcodeType", passcodeType);
+                editor.putInt("passcodeKdfVersion", passcodeKdfVersion);
                 editor.putLong("passcodeRetryInMs", passcodeRetryInMs);
                 editor.putLong("lastUptimeMillis", lastUptimeMillis);
                 editor.putInt("badPasscodeTries", badPasscodeTries);
@@ -516,6 +522,7 @@ public class SharedConfig {
             passcodeHash = preferences.getString("passcodeHash1", "");
             appLocked = preferences.getBoolean("appLocked", false);
             passcodeType = preferences.getInt("passcodeType", 0);
+            passcodeKdfVersion = preferences.getInt("passcodeKdfVersion", PASSCODE_KDF_LEGACY_SHA256);
             passcodeRetryInMs = preferences.getLong("passcodeRetryInMs", 0);
             lastUptimeMillis = preferences.getLong("lastUptimeMillis", 0);
             badPasscodeTries = preferences.getInt("badPasscodeTries", 0);
@@ -826,30 +833,66 @@ public class SharedConfig {
         return true;
     }
 
+    public static String hashPasscodePbkdf2(byte[] passcodeBytes, byte[] salt) {
+        byte[] derived = null;
+        try {
+            char[] passcodeChars = new char[passcodeBytes.length];
+            for (int i = 0; i < passcodeBytes.length; i++) {
+                passcodeChars[i] = (char) (passcodeBytes[i] & 0xFF);
+            }
+            javax.crypto.spec.PBEKeySpec spec = new javax.crypto.spec.PBEKeySpec(passcodeChars, salt, PBKDF2_ITERATIONS, 256);
+            java.util.Arrays.fill(passcodeChars, '\0');
+            javax.crypto.SecretKeyFactory factory = javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            derived = factory.generateSecret(spec).getEncoded();
+            spec.clearPassword();
+            return Utilities.bytesToHex(derived);
+        } catch (Exception e) {
+            FileLog.e(e);
+            return null;
+        } finally {
+            if (derived != null) java.util.Arrays.fill(derived, (byte) 0);
+        }
+    }
+
+    private static void upgradePasscodeKdf(String passcode) {
+        byte[] passcodeBytes = null;
+        try {
+            passcodeSalt = new byte[16];
+            Utilities.random.nextBytes(passcodeSalt);
+            passcodeBytes = passcode.getBytes("UTF-8");
+            String hash = hashPasscodePbkdf2(passcodeBytes, passcodeSalt);
+            if (hash != null) {
+                passcodeHash = hash;
+                passcodeKdfVersion = PASSCODE_KDF_PBKDF2;
+                saveConfig();
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        } finally {
+            if (passcodeBytes != null) java.util.Arrays.fill(passcodeBytes, (byte) 0);
+        }
+    }
+
     public static boolean checkPasscode(String passcode) {
         if (passcodeSalt.length == 0) {
             boolean result = Utilities.MD5(passcode).equals(passcodeHash);
             if (result) {
-                byte[] passcodeBytes = null;
-                byte[] bytes = null;
-                try {
-                    passcodeSalt = new byte[16];
-                    Utilities.random.nextBytes(passcodeSalt);
-                    passcodeBytes = passcode.getBytes("UTF-8");
-                    bytes = new byte[32 + passcodeBytes.length];
-                    System.arraycopy(passcodeSalt, 0, bytes, 0, 16);
-                    System.arraycopy(passcodeBytes, 0, bytes, 16, passcodeBytes.length);
-                    System.arraycopy(passcodeSalt, 0, bytes, passcodeBytes.length + 16, 16);
-                    passcodeHash = Utilities.bytesToHex(Utilities.computeSHA256(bytes, 0, bytes.length));
-                    saveConfig();
-                } catch (Exception e) {
-                    FileLog.e(e);
-                } finally {
-                    if (passcodeBytes != null) java.util.Arrays.fill(passcodeBytes, (byte) 0);
-                    if (bytes != null) java.util.Arrays.fill(bytes, (byte) 0);
-                }
+                upgradePasscodeKdf(passcode);
             }
             return result;
+        }
+
+        if (passcodeKdfVersion == PASSCODE_KDF_PBKDF2) {
+            byte[] passcodeBytes = null;
+            try {
+                passcodeBytes = passcode.getBytes("UTF-8");
+                String hash = hashPasscodePbkdf2(passcodeBytes, passcodeSalt);
+                return hash != null && passcodeHash.equals(hash);
+            } catch (Exception e) {
+                FileLog.e(e);
+            } finally {
+                if (passcodeBytes != null) java.util.Arrays.fill(passcodeBytes, (byte) 0);
+            }
         } else {
             byte[] passcodeBytes = null;
             byte[] bytes = null;
@@ -860,7 +903,11 @@ public class SharedConfig {
                 System.arraycopy(passcodeBytes, 0, bytes, 16, passcodeBytes.length);
                 System.arraycopy(passcodeSalt, 0, bytes, passcodeBytes.length + 16, 16);
                 String hash = Utilities.bytesToHex(Utilities.computeSHA256(bytes, 0, bytes.length));
-                return passcodeHash.equals(hash);
+                boolean result = passcodeHash.equals(hash);
+                if (result) {
+                    upgradePasscodeKdf(passcode);
+                }
+                return result;
             } catch (Exception e) {
                 FileLog.e(e);
             } finally {
@@ -880,6 +927,7 @@ public class SharedConfig {
         badPasscodeTries = 0;
         passcodeHash = "";
         passcodeSalt = new byte[0];
+        passcodeKdfVersion = PASSCODE_KDF_LEGACY_SHA256;
         for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
             DatabaseKeyManager.getInstance(a).onPasscodeRemoved();
         }
