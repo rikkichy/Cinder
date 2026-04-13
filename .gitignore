@@ -11,6 +11,9 @@ TMessagesProj/jniRes/
 TMessagesProj/afat/
 TMessagesProj_App/afat/
 
+# Private credentials (api_id, api_hash, keystore)
+private/
+
 # Removed upstream modules (do not re-track after upstream merge)
 TMessagesProj_AppHuawei/
 TMessagesProj_AppHockeyApp/

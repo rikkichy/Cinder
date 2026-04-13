@@ -50,12 +50,12 @@ import java.io.File;
 
 public class MusicPlayerService extends Service implements NotificationCenter.NotificationCenterDelegate {
 
-    public static final String NOTIFY_PREVIOUS = "org.telegram.android.musicplayer.previous";
-    public static final String NOTIFY_CLOSE = "org.telegram.android.musicplayer.close";
-    public static final String NOTIFY_PAUSE = "org.telegram.android.musicplayer.pause";
-    public static final String NOTIFY_PLAY = "org.telegram.android.musicplayer.play";
-    public static final String NOTIFY_NEXT = "org.telegram.android.musicplayer.next";
-    public static final String NOTIFY_SEEK = "org.telegram.android.musicplayer.seek";
+    public static final String NOTIFY_PREVIOUS = "cat.ri.cinder.musicplayer.previous";
+    public static final String NOTIFY_CLOSE = "cat.ri.cinder.musicplayer.close";
+    public static final String NOTIFY_PAUSE = "cat.ri.cinder.musicplayer.pause";
+    public static final String NOTIFY_PLAY = "cat.ri.cinder.musicplayer.play";
+    public static final String NOTIFY_NEXT = "cat.ri.cinder.musicplayer.next";
+    public static final String NOTIFY_SEEK = "cat.ri.cinder.musicplayer.seek";
 
     private static final int ID_NOTIFICATION = 5;
 

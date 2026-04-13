@@ -131,6 +131,8 @@ android {
             buildConfigField "boolean", "BUNDLE", "false"
             buildConfigField "boolean", "BUILD_HOST_IS_WINDOWS", isWindows
             buildConfigField "int", "VERSION_NUM", "0"
+            buildConfigField "int", "APP_ID", getApiCredential("APP_ID") ?: "0"
+            buildConfigField "String", "APP_HASH", "\"" + getApiCredential("APP_HASH") + "\""
         }
 
         release {
@@ -148,6 +150,8 @@ android {
             buildConfigField "boolean", "BUNDLE", "false"
             buildConfigField "boolean", "BUILD_HOST_IS_WINDOWS", isWindows
             buildConfigField "int", "VERSION_NUM", "7"
+            buildConfigField "int", "APP_ID", getApiCredential("APP_ID") ?: "0"
+            buildConfigField "String", "APP_HASH", "\"" + getApiCredential("APP_HASH") + "\""
         }
     }
 
@@ -163,6 +167,17 @@ def getProps(String propName) {
         return props[propName]
     } else {
         return "";
+    }
+}
+
+def getApiCredential(String key) {
+    def propsFile = rootProject.file('private/api_credentials.properties')
+    if (propsFile.exists()) {
+        def props = new Properties()
+        props.load(new FileInputStream(propsFile))
+        return props[key] ?: ""
+    } else {
+        return ""
     }
 }
 apply plugin: 'com.google.gms.google-services'
