@@ -395,7 +395,10 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
                 if (actionBar != null) {
                     actionBar.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
 
-                    actionBar.setBackButtonImage(R.drawable.ic_ab_back);
+                    boolean mandatory = type == TYPE_SETUP_CODE && SharedConfig.passcodeHash.isEmpty();
+                    if (!mandatory) {
+                        actionBar.setBackButtonImage(R.drawable.ic_ab_back);
+                    }
                     actionBar.setItemsColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText), false);
                     actionBar.setItemsBackgroundColor(Theme.getColor(Theme.key_actionBarWhiteSelector), false);
                     actionBar.setCastShadows(false);
@@ -411,6 +414,9 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
                         @Override
                         public void onItemClick(int id) {
                             if (id == -1) {
+                                if (type == TYPE_SETUP_CODE && SharedConfig.passcodeHash.isEmpty()) {
+                                    return;
+                                }
                                 finishFragment();
                             } else if (id == ID_SWITCH_TYPE) {
                                 currentPasswordType = currentPasswordType == SharedConfig.PASSCODE_TYPE_PIN ? SharedConfig.PASSCODE_TYPE_PASSWORD : SharedConfig.PASSCODE_TYPE_PIN;
@@ -869,17 +875,26 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
 
     private void updateFields() {
         String text;
+        boolean mandatorySetup = type == TYPE_SETUP_CODE && SharedConfig.passcodeHash.isEmpty();
         if (type == TYPE_ENTER_CODE_TO_MANAGE_SETTINGS) {
             text = LocaleController.getString(R.string.EnterYourPasscodeInfo);
         } else if (passcodeSetStep == 0) {
-            text = LocaleController.getString(currentPasswordType == SharedConfig.PASSCODE_TYPE_PIN ? R.string.CreatePasscodeInfoPIN : R.string.CreatePasscodeInfoPassword);
+            if (mandatorySetup) {
+                text = "Cinder requires a passcode to encrypt your data";
+            } else {
+                text = LocaleController.getString(currentPasswordType == SharedConfig.PASSCODE_TYPE_PIN ? R.string.CreatePasscodeInfoPIN : R.string.CreatePasscodeInfoPassword);
+            }
         } else text = descriptionTextSwitcher.getCurrentView().getText().toString();
 
         boolean animate = !(descriptionTextSwitcher.getCurrentView().getText().equals(text) || TextUtils.isEmpty(descriptionTextSwitcher.getCurrentView().getText()));
         if (type == TYPE_ENTER_CODE_TO_MANAGE_SETTINGS) {
             descriptionTextSwitcher.setText(LocaleController.getString(R.string.EnterYourPasscodeInfo), animate);
         } else if (passcodeSetStep == 0) {
-            descriptionTextSwitcher.setText(LocaleController.getString(currentPasswordType == SharedConfig.PASSCODE_TYPE_PIN ? R.string.CreatePasscodeInfoPIN : R.string.CreatePasscodeInfoPassword), animate);
+            if (mandatorySetup) {
+                descriptionTextSwitcher.setText("Cinder requires a passcode to encrypt your data", animate);
+            } else {
+                descriptionTextSwitcher.setText(LocaleController.getString(currentPasswordType == SharedConfig.PASSCODE_TYPE_PIN ? R.string.CreatePasscodeInfoPIN : R.string.CreatePasscodeInfoPassword), animate);
+            }
         }
         if (isPinCode()) {
             AndroidUtilities.updateViewVisibilityAnimated(codeFieldContainer, true, 1f, animate);
