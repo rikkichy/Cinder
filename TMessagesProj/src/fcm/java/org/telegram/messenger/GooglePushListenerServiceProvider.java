@@ -38,6 +38,7 @@ public final class GooglePushListenerServiceProvider implements PushListenerCont
         }
         Utilities.globalQueue.postRunnable(() -> {
             try {
+                FirebaseMessaging.getInstance().setAutoInitEnabled(false);
                 SharedConfig.pushStringGetTimeStart = SystemClock.elapsedRealtime();
                 FirebaseMessaging.getInstance().getToken()
                         .addOnCompleteListener(task -> {

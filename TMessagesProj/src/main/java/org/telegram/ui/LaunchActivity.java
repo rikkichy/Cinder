@@ -6791,6 +6791,19 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         checkFreeDiscSpace(0);
         MediaController.checkGallery();
         onPasscodeResume();
+        if (SharedConfig.passcodeHash.isEmpty() && UserConfig.getInstance(currentAccount).isClientActivated()) {
+            List<BaseFragment> fragments = actionBarLayout.getFragmentStack();
+            boolean alreadyShowing = false;
+            for (int i = 0; i < fragments.size(); i++) {
+                if (fragments.get(i) instanceof PasscodeActivity) {
+                    alreadyShowing = true;
+                    break;
+                }
+            }
+            if (!alreadyShowing) {
+                presentFragment(new PasscodeActivity(PasscodeActivity.TYPE_SETUP_CODE));
+            }
+        }
         if (passcodeDialog == null || passcodeDialog.passcodeView.getVisibility() != View.VISIBLE) {
             actionBarLayout.onResume();
             if (AndroidUtilities.isTablet()) {

@@ -175,6 +175,21 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
     }
 
     @Override
+    public boolean isSwipeBackEnabled(android.view.MotionEvent event) {
+        if (type == TYPE_SETUP_CODE && SharedConfig.passcodeHash.isEmpty()) {
+            return false;
+        }
+        return super.isSwipeBackEnabled(event);
+    }
+
+    @Override
+    public boolean canBeginSlide() {
+        if (type == TYPE_SETUP_CODE && SharedConfig.passcodeHash.isEmpty()) {
+            return false;
+        }
+        return super.canBeginSlide();
+    }
+
     public void onFragmentDestroy() {
         super.onFragmentDestroy();
         if (type == TYPE_MANAGE_CODE_SETTINGS) {
@@ -185,12 +200,18 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
 
     @Override
     public View createView(Context context) {
-        actionBar.setBackButtonImage(R.drawable.ic_ab_back);
+        boolean mandatorySetup = type == TYPE_SETUP_CODE && SharedConfig.passcodeHash.isEmpty();
+        if (!mandatorySetup) {
+            actionBar.setBackButtonImage(R.drawable.ic_ab_back);
+        }
         actionBar.setAllowOverlayTitle(false);
         actionBar.setActionBarMenuOnItemClick(new ActionBar.ActionBarMenuOnItemClick() {
             @Override
             public void onItemClick(int id) {
                 if (id == -1) {
+                    if (type == TYPE_SETUP_CODE && SharedConfig.passcodeHash.isEmpty()) {
+                        return;
+                    }
                     finishFragment();
                 }
             }

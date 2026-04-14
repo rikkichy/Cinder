@@ -179,6 +179,29 @@ JNIEXPORT jlong Java_org_telegram_SQLite_SQLiteDatabase_opendb(JNIEnv *env, jobj
     return (jlong) handle;
 }
 
+JNIEXPORT void Java_org_telegram_SQLite_SQLiteDatabase_rekey(JNIEnv *env, jobject object, jlong sqliteHandle, jbyteArray key) {
+    sqlite3 *handle = (sqlite3 *) (intptr_t) sqliteHandle;
+    if (key == nullptr) {
+        int err = sqlite3_rekey(handle, NULL, 0);
+        if (SQLITE_OK != err) {
+            throw_sqlite3_exception(env, handle, err);
+        }
+        return;
+    }
+    jsize keyLen = env->GetArrayLength(key);
+    if (keyLen > 0) {
+        jbyte *keyBytes = env->GetByteArrayElements(key, NULL);
+        if (keyBytes != nullptr) {
+            int err = sqlite3_rekey(handle, keyBytes, (int) keyLen);
+            OPENSSL_cleanse(keyBytes, keyLen);
+            env->ReleaseByteArrayElements(key, keyBytes, JNI_ABORT);
+            if (SQLITE_OK != err) {
+                throw_sqlite3_exception(env, handle, err);
+            }
+        }
+    }
+}
+
 JNIEXPORT jint Java_org_telegram_SQLite_SQLiteCursor_columnCount(JNIEnv *env, jobject object, jlong statementHandle) {
     sqlite3_stmt *handle = (sqlite3_stmt *) (intptr_t) statementHandle;
     return sqlite3_column_count(handle);

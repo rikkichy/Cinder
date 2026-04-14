@@ -319,10 +319,22 @@ public class MessagesStorage extends BaseController {
             byte[] dek = DatabaseKeyManager.getInstance(currentAccount).getDek();
             try {
                 database = new SQLiteDatabase(cacheFile.getPath(), dek);
+                database.executeFast("PRAGMA secure_delete = ON").stepThis().dispose();
+            } catch (Exception e) {
+                if (!createTable) {
+                    try { if (database != null) database.close(); } catch (Exception ignored) {}
+                    database = new SQLiteDatabase(cacheFile.getPath());
+                    database.rekey(dek);
+                    database.executeFast("PRAGMA secure_delete = ON").stepThis().dispose();
+                    if (BuildVars.LOGS_ENABLED) {
+                        FileLog.d("migrated unencrypted cache database to encrypted");
+                    }
+                } else {
+                    throw e;
+                }
             } finally {
                 if (dek != null) java.util.Arrays.fill(dek, (byte) 0);
             }
-            database.executeFast("PRAGMA secure_delete = ON").stepThis().dispose();
             database.executeFast("PRAGMA temp_store = MEMORY").stepThis().dispose();
             database.executeFast("PRAGMA journal_mode = WAL").stepThis().dispose();
             database.executeFast("PRAGMA journal_size_limit = 10485760").stepThis().dispose();
@@ -434,7 +446,12 @@ public class MessagesStorage extends BaseController {
         FileLog.e("Database restored = " + restored);
         if (restored) {
             try {
-                database = new SQLiteDatabase(cacheFile.getPath());
+                byte[] dek = DatabaseKeyManager.getInstance(currentAccount).getDek();
+                try {
+                    database = new SQLiteDatabase(cacheFile.getPath(), dek);
+                } finally {
+                    if (dek != null) java.util.Arrays.fill(dek, (byte) 0);
+                }
                 database.executeFast("PRAGMA secure_delete = ON").stepThis().dispose();
                 database.executeFast("PRAGMA temp_store = MEMORY").stepThis().dispose();
                 database.executeFast("PRAGMA journal_mode = WAL").stepThis().dispose();
