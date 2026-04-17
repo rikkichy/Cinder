@@ -894,9 +894,9 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
         }
         autoLockRow = rowCount++;
         autoLockDetailRow = rowCount++;
-        captureHeaderRow = rowCount++;
-        captureRow = rowCount++;
-        captureDetailRow = rowCount++;
+        captureHeaderRow = -1;
+        captureRow = -1;
+        captureDetailRow = -1;
         if (!SharedConfig.passcodeHash.isEmpty()) {
             duressHeaderRow = rowCount++;
             duressPasscodeRow = rowCount++;
@@ -912,7 +912,7 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
             disableDuressPasscodeRow = -1;
             duressDetailRow = -1;
         }
-        disablePasscodeRow = rowCount++;
+        disablePasscodeRow = -1;
     }
 
     @Override
