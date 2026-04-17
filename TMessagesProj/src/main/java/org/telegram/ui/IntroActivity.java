@@ -141,7 +141,7 @@ public class IntroActivity extends BaseFragment implements NotificationCenter.No
                 LocaleController.getString(R.string.Page6Title)
         };
         messages = new String[]{
-                "Reduce attack surface with Cinder, hardened fork of Telegram.",
+                LocaleController.getString(R.string.CinderIntroMessage),
                 LocaleController.getString(R.string.Page2Message),
                 LocaleController.getString(R.string.Page3Message),
                 LocaleController.getString(R.string.Page5Message),

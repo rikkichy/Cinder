@@ -263,4 +263,16 @@
     <string name="RemindTodayAt">\'Отправить сегодня в\' HH:mm</string>
     <string name="RemindDayAt">\'Отправить\' d MMM \'в\' HH:mm</string>
     <string name="RemindDayYearAt">\'Напомнить\' d MMM yyyy \'в\' HH:mm</string>
+    <string name="CinderRequiresPasscode">Cinder требует код-пароль для шифрования ваших данных</string>
+    <string name="CinderIntroMessage">Будьте в безопасности вместе с Cinder.</string>
+    <string name="DuressPasscode">Код-пароль под принуждением</string>
+    <string name="SetDuressPasscode">Задать код-пароль под принуждением</string>
+    <string name="ChangeDuressPasscode">Изменить код-пароль под принуждением</string>
+    <string name="DisableDuressPasscode">Отключить код-пароль под принуждением</string>
+    <string name="DisableDuressPasscodeMessage">Код-пароль под принуждением будет удалён. Его ввод больше не будет очищать приложение.</string>
+    <string name="DuressPasscodeInfo">Ввод такого кода запустит удаление всех данных и сброс приложения до заводских настроек.</string>
+    <string name="DuressPasscodeMustDiffer">Код-пароль под принуждением должен отличаться от основного</string>
+    <string name="AutoLockSeconds10">10 секунд</string>
+    <string name="AutoLockSeconds30">30 секунд</string>
+    <string name="AutoLockSecondsFormat">%1$d сек.</string>
 </resources>

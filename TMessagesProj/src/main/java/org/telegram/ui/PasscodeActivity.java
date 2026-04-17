@@ -364,9 +364,9 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
                         }
                         numberPicker.setFormatter(value -> {
                             if (value == 0) {
-                                return LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, "10 seconds");
+                                return LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, LocaleController.getString(R.string.AutoLockSeconds10));
                             } else if (value == 1) {
-                                return LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, "30 seconds");
+                                return LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, LocaleController.getString(R.string.AutoLockSeconds30));
                             } else if (value == 2) {
                                 return LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, LocaleController.formatPluralString("Minutes", 1));
                             } else if (value == 3) {
@@ -422,8 +422,8 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
                         presentFragment(new PasscodeActivity(TYPE_SETUP_CODE, true));
                     } else if (position == disableDuressPasscodeRow) {
                         AlertDialog alertDialog = new AlertDialog.Builder(getParentActivity())
-                                .setTitle("Disable duress passcode")
-                                .setMessage("The duress passcode will be removed. Entering it will no longer wipe the app.")
+                                .setTitle(LocaleController.getString(R.string.DisableDuressPasscode))
+                                .setMessage(LocaleController.getString(R.string.DisableDuressPasscodeMessage))
                                 .setNegativeButton(LocaleController.getString(R.string.Cancel), null)
                                 .setPositiveButton(LocaleController.getString(R.string.DisablePasscodeTurnOff), (dialog, which) -> {
                                     SharedConfig.clearDuressPasscode();
@@ -941,7 +941,7 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
             text = LocaleController.getString(R.string.EnterYourPasscodeInfo);
         } else if (passcodeSetStep == 0) {
             if (mandatorySetup) {
-                text = "Cinder requires a passcode to encrypt your data";
+                text = LocaleController.getString(R.string.CinderRequiresPasscode);
             } else {
                 text = LocaleController.getString(currentPasswordType == SharedConfig.PASSCODE_TYPE_PIN ? R.string.CreatePasscodeInfoPIN : R.string.CreatePasscodeInfoPassword);
             }
@@ -952,7 +952,7 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
             descriptionTextSwitcher.setText(LocaleController.getString(R.string.EnterYourPasscodeInfo), animate);
         } else if (passcodeSetStep == 0) {
             if (mandatorySetup) {
-                descriptionTextSwitcher.setText("Cinder requires a passcode to encrypt your data", animate);
+                descriptionTextSwitcher.setText(LocaleController.getString(R.string.CinderRequiresPasscode), animate);
             } else {
                 descriptionTextSwitcher.setText(LocaleController.getString(currentPasswordType == SharedConfig.PASSCODE_TYPE_PIN ? R.string.CreatePasscodeInfoPIN : R.string.CreatePasscodeInfoPassword), animate);
             }
@@ -1045,7 +1045,7 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
             if (isDuressSetup) {
                 if (SharedConfig.isMainPasscode(firstPassword)) {
                     AndroidUtilities.updateViewVisibilityAnimated(passcodesDoNotMatchTextView, true);
-                    passcodesDoNotMatchTextView.setText("Duress passcode must differ from your main passcode");
+                    passcodesDoNotMatchTextView.setText(LocaleController.getString(R.string.DuressPasscodeMustDiffer));
                     for (CodeNumberField f : codeFieldContainer.codeField) {
                         f.setText("");
                     }
@@ -1269,7 +1269,7 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
                         }
                         String val;
                         if (SharedConfig.autoLockIn < 60) {
-                            val = LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, SharedConfig.autoLockIn + " seconds");
+                            val = LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, LocaleController.formatString("AutoLockSecondsFormat", R.string.AutoLockSecondsFormat, SharedConfig.autoLockIn));
                         } else if (SharedConfig.autoLockIn < 60 * 60) {
                             val = LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, LocaleController.formatPluralString("Minutes", SharedConfig.autoLockIn / 60));
                         } else if (SharedConfig.autoLockIn < 60 * 60 * 24) {
@@ -1286,11 +1286,11 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
                         textCell.setTextColor(Theme.getColor(Theme.key_text_RedBold));
                     } else if (position == duressPasscodeRow) {
                         boolean set = !SharedConfig.duressPasscodeHash.isEmpty();
-                        textCell.setText(set ? "Change duress passcode" : "Set duress passcode", set);
+                        textCell.setText(LocaleController.getString(set ? R.string.ChangeDuressPasscode : R.string.SetDuressPasscode), set);
                         textCell.setTag(Theme.key_windowBackgroundWhiteBlackText);
                         textCell.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
                     } else if (position == disableDuressPasscodeRow) {
-                        textCell.setText("Disable duress passcode", false);
+                        textCell.setText(LocaleController.getString(R.string.DisableDuressPasscode), false);
                         textCell.setTag(Theme.key_text_RedBold);
                         textCell.setTextColor(Theme.getColor(Theme.key_text_RedBold));
                     }
@@ -1302,7 +1302,7 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
                     if (position == captureHeaderRow) {
                         cell.setText(LocaleController.getString(R.string.ScreenCaptureHeader));
                     } else if (position == duressHeaderRow) {
-                        cell.setText("Duress passcode");
+                        cell.setText(LocaleController.getString(R.string.DuressPasscode));
                     }
                     break;
                 }
@@ -1325,7 +1325,7 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
                         cell.setText(LocaleController.getString(R.string.ScreenCaptureInfo));
                         cell.getTextView().setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
                     } else if (position == duressDetailRow) {
-                        cell.setText("Entering this passcode at the lock screen logs out all accounts and wipes the app to a fresh state.");
+                        cell.setText(LocaleController.getString(R.string.DuressPasscodeInfo));
                         cell.getTextView().setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
                     }
                     break;
