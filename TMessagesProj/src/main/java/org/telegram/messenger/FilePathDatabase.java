@@ -59,25 +59,8 @@ public class FilePathDatabase {
             createTable = true;
         }
         try {
-            byte[] dek = DatabaseKeyManager.getInstance(currentAccount).getDek();
-            try {
-                database = new SQLiteDatabase(cacheFile.getPath(), dek);
-                database.executeFast("PRAGMA secure_delete = ON").stepThis().dispose();
-            } catch (Exception e) {
-                if (!createTable) {
-                    try { if (database != null) database.close(); } catch (Exception ignored) {}
-                    database = new SQLiteDatabase(cacheFile.getPath());
-                    database.rekey(dek);
-                    database.executeFast("PRAGMA secure_delete = ON").stepThis().dispose();
-                    if (BuildVars.LOGS_ENABLED) {
-                        FileLog.d("migrated unencrypted file_to_path database to encrypted");
-                    }
-                } else {
-                    throw e;
-                }
-            } finally {
-                if (dek != null) java.util.Arrays.fill(dek, (byte) 0);
-            }
+            database = new SQLiteDatabase(cacheFile.getPath());
+            database.executeFast("PRAGMA secure_delete = ON").stepThis().dispose();
             database.executeFast("PRAGMA temp_store = MEMORY").stepThis().dispose();
 
             if (createTable) {

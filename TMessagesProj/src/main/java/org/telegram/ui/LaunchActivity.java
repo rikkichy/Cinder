@@ -6801,7 +6801,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                 }
             }
             if (!alreadyShowing) {
-                presentFragment(new PasscodeActivity(PasscodeActivity.TYPE_SETUP_CODE));
+                presentFragment(new PasscodeActivity(PasscodeActivity.TYPE_SETUP_CODE), false, true);
             }
         }
         if (passcodeDialog == null || passcodeDialog.passcodeView.getVisibility() != View.VISIBLE) {

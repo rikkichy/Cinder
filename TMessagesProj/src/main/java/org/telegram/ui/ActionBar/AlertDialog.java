@@ -1336,6 +1336,13 @@ public class AlertDialog extends Dialog implements Drawable.Callback, Notificati
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        try {
+            Window w = getWindow();
+            if (w != null) {
+                w.addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+            }
+        } catch (Throwable ignored) {
+        }
         inflateContent(true);
         NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.emojiLoaded);
     }

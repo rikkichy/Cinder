@@ -1,6 +1,5 @@
 #include <cstring>
 #include <jni.h>
-#include <openssl/mem.h>
 #include "sqlite/sqlite3.h"
 #include "tgnet/NativeByteBuffer.h"
 #include "tgnet/BuffersStorage.h"
@@ -140,7 +139,7 @@ JNIEXPORT void Java_org_telegram_SQLite_SQLiteDatabase_commitTransaction(JNIEnv 
     sqlite3_exec(handle, "COMMIT", 0, 0, 0);
 }
 
-JNIEXPORT jlong Java_org_telegram_SQLite_SQLiteDatabase_opendb(JNIEnv *env, jobject object, jstring fileName, jstring tempDir, jbyteArray key) {
+JNIEXPORT jlong Java_org_telegram_SQLite_SQLiteDatabase_opendb(JNIEnv *env, jobject object, jstring fileName, jstring tempDir) {
     char const *fileNameStr = env->GetStringUTFChars(fileName, 0);
     char const *tempDirStr = env->GetStringUTFChars(tempDir, 0);
 
@@ -156,20 +155,6 @@ JNIEXPORT jlong Java_org_telegram_SQLite_SQLiteDatabase_opendb(JNIEnv *env, jobj
     if (SQLITE_OK != err) {
         throw_sqlite3_exception(env, handle, err);
     }
-    if (key != nullptr && SQLITE_OK == err) {
-        jsize keyLen = env->GetArrayLength(key);
-        if (keyLen > 0) {
-            jbyte *keyBytes = env->GetByteArrayElements(key, NULL);
-            if (keyBytes != nullptr) {
-                err = sqlite3_key(handle, keyBytes, (int) keyLen);
-                OPENSSL_cleanse(keyBytes, keyLen);
-                env->ReleaseByteArrayElements(key, keyBytes, JNI_ABORT);
-                if (SQLITE_OK != err) {
-                    throw_sqlite3_exception(env, handle, err);
-                }
-            }
-        }
-    }
     if (fileNameStr != 0) {
         env->ReleaseStringUTFChars(fileName, fileNameStr);
     }
@@ -177,29 +162,6 @@ JNIEXPORT jlong Java_org_telegram_SQLite_SQLiteDatabase_opendb(JNIEnv *env, jobj
         env->ReleaseStringUTFChars(tempDir, tempDirStr);
     }
     return (jlong) handle;
-}
-
-JNIEXPORT void Java_org_telegram_SQLite_SQLiteDatabase_rekey(JNIEnv *env, jobject object, jlong sqliteHandle, jbyteArray key) {
-    sqlite3 *handle = (sqlite3 *) (intptr_t) sqliteHandle;
-    if (key == nullptr) {
-        int err = sqlite3_rekey(handle, NULL, 0);
-        if (SQLITE_OK != err) {
-            throw_sqlite3_exception(env, handle, err);
-        }
-        return;
-    }
-    jsize keyLen = env->GetArrayLength(key);
-    if (keyLen > 0) {
-        jbyte *keyBytes = env->GetByteArrayElements(key, NULL);
-        if (keyBytes != nullptr) {
-            int err = sqlite3_rekey(handle, keyBytes, (int) keyLen);
-            OPENSSL_cleanse(keyBytes, keyLen);
-            env->ReleaseByteArrayElements(key, keyBytes, JNI_ABORT);
-            if (SQLITE_OK != err) {
-                throw_sqlite3_exception(env, handle, err);
-            }
-        }
-    }
 }
 
 JNIEXPORT jint Java_org_telegram_SQLite_SQLiteCursor_columnCount(JNIEnv *env, jobject object, jlong statementHandle) {

@@ -1217,7 +1217,7 @@ public class PaymentFormActivity extends BaseFragment implements NotificationCen
                 webView.getSettings().setUseWideViewPort(true);
 
                 if (Build.VERSION.SDK_INT >= 21) {
-                    webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+                    webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
                     CookieManager cookieManager = CookieManager.getInstance();
                     cookieManager.setAcceptThirdPartyCookies(webView, true);
                 }
@@ -2483,7 +2483,7 @@ public class PaymentFormActivity extends BaseFragment implements NotificationCen
                     webView.getSettings().setUseWideViewPort(true);
 
                     if (Build.VERSION.SDK_INT >= 21) {
-                        webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+                        webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
                         CookieManager cookieManager = CookieManager.getInstance();
                         cookieManager.setAcceptThirdPartyCookies(webView, true);
                     }

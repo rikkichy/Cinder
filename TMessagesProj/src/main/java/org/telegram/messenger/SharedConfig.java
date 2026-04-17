@@ -233,6 +233,10 @@ public class SharedConfig {
     public static int badPasscodeTries;
     public static byte[] passcodeSalt = new byte[0];
     public static int passcodeKdfVersion = PASSCODE_KDF_LEGACY_SHA256;
+
+    public static String duressPasscodeHash = "";
+    public static byte[] duressPasscodeSalt = new byte[0];
+    public static int duressPasscodeKdfVersion = PASSCODE_KDF_PBKDF2;
     public static boolean appLocked;
     public static int autoLockIn = 60 * 60;
 
@@ -444,6 +448,9 @@ public class SharedConfig {
                 editor.putBoolean("appLocked", appLocked);
                 editor.putInt("passcodeType", passcodeType);
                 editor.putInt("passcodeKdfVersion", passcodeKdfVersion);
+                editor.putString("duressPasscodeHash", duressPasscodeHash);
+                editor.putString("duressPasscodeSalt", duressPasscodeSalt.length > 0 ? Base64.encodeToString(duressPasscodeSalt, Base64.DEFAULT) : "");
+                editor.putInt("duressPasscodeKdfVersion", duressPasscodeKdfVersion);
                 editor.putLong("passcodeRetryInMs", passcodeRetryInMs);
                 editor.putLong("lastUptimeMillis", lastUptimeMillis);
                 editor.putInt("badPasscodeTries", badPasscodeTries);
@@ -520,6 +527,14 @@ public class SharedConfig {
             SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("userconfing", Context.MODE_PRIVATE);
             saveIncomingPhotos = preferences.getBoolean("saveIncomingPhotos", false);
             passcodeHash = preferences.getString("passcodeHash1", "");
+            duressPasscodeHash = preferences.getString("duressPasscodeHash", "");
+            duressPasscodeKdfVersion = preferences.getInt("duressPasscodeKdfVersion", PASSCODE_KDF_PBKDF2);
+            String duressSaltString = preferences.getString("duressPasscodeSalt", "");
+            if (duressSaltString != null && duressSaltString.length() > 0) {
+                duressPasscodeSalt = Base64.decode(duressSaltString, Base64.DEFAULT);
+            } else {
+                duressPasscodeSalt = new byte[0];
+            }
             appLocked = preferences.getBoolean("appLocked", false);
             passcodeType = preferences.getInt("passcodeType", 0);
             passcodeKdfVersion = preferences.getInt("passcodeKdfVersion", PASSCODE_KDF_LEGACY_SHA256);
@@ -527,6 +542,9 @@ public class SharedConfig {
             lastUptimeMillis = preferences.getLong("lastUptimeMillis", 0);
             badPasscodeTries = preferences.getInt("badPasscodeTries", 0);
             autoLockIn = preferences.getInt("autoLockIn", 60 * 60);
+            if (autoLockIn < 10) {
+                autoLockIn = 60;
+            }
             lastPauseTime = preferences.getInt("lastPauseTime", 0);
             useFingerprintLock = preferences.getBoolean("useFingerprint", true);
             allowScreenCapture = preferences.getBoolean("allowScreenCapture", false);
@@ -873,7 +891,102 @@ public class SharedConfig {
         }
     }
 
+    public static boolean isMainPasscode(String passcode) {
+        if (passcodeHash == null || passcodeHash.length() == 0 || passcodeSalt == null || passcodeSalt.length == 0) {
+            return false;
+        }
+        byte[] passcodeBytes = null;
+        try {
+            passcodeBytes = passcode.getBytes("UTF-8");
+            if (passcodeKdfVersion == PASSCODE_KDF_PBKDF2) {
+                String hash = hashPasscodePbkdf2(passcodeBytes, passcodeSalt);
+                return hash != null && passcodeHash.equals(hash);
+            } else {
+                byte[] bytes = new byte[32 + passcodeBytes.length];
+                System.arraycopy(passcodeSalt, 0, bytes, 0, 16);
+                System.arraycopy(passcodeBytes, 0, bytes, 16, passcodeBytes.length);
+                System.arraycopy(passcodeSalt, 0, bytes, passcodeBytes.length + 16, 16);
+                String hash = Utilities.bytesToHex(Utilities.computeSHA256(bytes, 0, bytes.length));
+                java.util.Arrays.fill(bytes, (byte) 0);
+                return passcodeHash.equals(hash);
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+            return false;
+        } finally {
+            if (passcodeBytes != null) java.util.Arrays.fill(passcodeBytes, (byte) 0);
+        }
+    }
+
+    public static boolean isDuressPasscode(String passcode) {
+        if (duressPasscodeHash == null || duressPasscodeHash.length() == 0 || duressPasscodeSalt == null || duressPasscodeSalt.length == 0) {
+            return false;
+        }
+        byte[] passcodeBytes = null;
+        try {
+            passcodeBytes = passcode.getBytes("UTF-8");
+            String hash = hashPasscodePbkdf2(passcodeBytes, duressPasscodeSalt);
+            return hash != null && duressPasscodeHash.equals(hash);
+        } catch (Exception e) {
+            FileLog.e(e);
+            return false;
+        } finally {
+            if (passcodeBytes != null) java.util.Arrays.fill(passcodeBytes, (byte) 0);
+        }
+    }
+
+    public static void setDuressPasscode(String passcode) {
+        byte[] passcodeBytes = null;
+        try {
+            duressPasscodeSalt = new byte[16];
+            Utilities.random.nextBytes(duressPasscodeSalt);
+            passcodeBytes = passcode.getBytes("UTF-8");
+            String hash = hashPasscodePbkdf2(passcodeBytes, duressPasscodeSalt);
+            if (hash != null) {
+                duressPasscodeHash = hash;
+                duressPasscodeKdfVersion = PASSCODE_KDF_PBKDF2;
+                saveConfig();
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        } finally {
+            if (passcodeBytes != null) java.util.Arrays.fill(passcodeBytes, (byte) 0);
+        }
+    }
+
+    public static void clearDuressPasscode() {
+        duressPasscodeHash = "";
+        duressPasscodeSalt = new byte[0];
+        saveConfig();
+    }
+
+    public static void triggerDuressWipe() {
+        duressPasscodeHash = "";
+        duressPasscodeSalt = new byte[0];
+        passcodeHash = "";
+        passcodeSalt = new byte[0];
+        passcodeKdfVersion = PASSCODE_KDF_LEGACY_SHA256;
+        appLocked = false;
+        badPasscodeTries = 0;
+        passcodeRetryInMs = 0;
+        saveConfig();
+        AndroidUtilities.runOnUIThread(() -> {
+            for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                try {
+                    if (UserConfig.getInstance(a).isClientActivated()) {
+                        MessagesController.getInstance(a).performLogout(1);
+                    }
+                } catch (Throwable ignored) {
+                }
+            }
+        });
+    }
+
     public static boolean checkPasscode(String passcode) {
+        if (isDuressPasscode(passcode)) {
+            triggerDuressWipe();
+            return true;
+        }
         if (passcodeSalt.length == 0) {
             boolean result = Utilities.MD5(passcode).equals(passcodeHash);
             if (result) {
@@ -928,9 +1041,9 @@ public class SharedConfig {
         passcodeHash = "";
         passcodeSalt = new byte[0];
         passcodeKdfVersion = PASSCODE_KDF_LEGACY_SHA256;
-        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
-            DatabaseKeyManager.getInstance(a).onPasscodeRemoved();
-        }
+        duressPasscodeHash = "";
+        duressPasscodeSalt = new byte[0];
+        duressPasscodeKdfVersion = PASSCODE_KDF_PBKDF2;
         autoLockIn = 60 * 60;
         lastPauseTime = 0;
         useFingerprintLock = true;

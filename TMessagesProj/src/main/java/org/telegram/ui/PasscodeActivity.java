@@ -48,7 +48,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
-import org.telegram.messenger.DatabaseKeyManager;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.NotificationCenter;
@@ -147,6 +146,11 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
     @Keep
     private int disablePasscodeRow;
 
+    private int duressHeaderRow;
+    private int duressPasscodeRow;
+    private int duressDetailRow;
+    private int disableDuressPasscodeRow;
+
     private int rowCount;
 
     private ActionBarMenuItem otherItem;
@@ -162,6 +166,14 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
     public PasscodeActivity(@PasscodeActivityType int type) {
         super();
         this.type = type;
+    }
+
+    private boolean isDuressSetup;
+
+    public PasscodeActivity(@PasscodeActivityType int type, boolean isDuressSetup) {
+        super();
+        this.type = type;
+        this.isDuressSetup = isDuressSetup;
     }
 
     @Override
@@ -330,28 +342,42 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
                         builder.setTitle(LocaleController.getString(R.string.AutoLock));
                         final NumberPicker numberPicker = new NumberPicker(getParentActivity());
                         numberPicker.setMinValue(0);
-                        numberPicker.setMaxValue(4);
-                        if (SharedConfig.autoLockIn == 0) {
+                        numberPicker.setMaxValue(7);
+                        if (SharedConfig.autoLockIn == 10) {
                             numberPicker.setValue(0);
-                        } else if (SharedConfig.autoLockIn == 60) {
+                        } else if (SharedConfig.autoLockIn == 30) {
                             numberPicker.setValue(1);
-                        } else if (SharedConfig.autoLockIn == 60 * 5) {
+                        } else if (SharedConfig.autoLockIn == 60) {
                             numberPicker.setValue(2);
-                        } else if (SharedConfig.autoLockIn == 60 * 60) {
+                        } else if (SharedConfig.autoLockIn == 60 * 5) {
                             numberPicker.setValue(3);
-                        } else if (SharedConfig.autoLockIn == 60 * 60 * 5) {
+                        } else if (SharedConfig.autoLockIn == 60 * 15) {
                             numberPicker.setValue(4);
+                        } else if (SharedConfig.autoLockIn == 60 * 30) {
+                            numberPicker.setValue(5);
+                        } else if (SharedConfig.autoLockIn == 60 * 60) {
+                            numberPicker.setValue(6);
+                        } else if (SharedConfig.autoLockIn == 60 * 60 * 5) {
+                            numberPicker.setValue(7);
+                        } else {
+                            numberPicker.setValue(2);
                         }
                         numberPicker.setFormatter(value -> {
                             if (value == 0) {
-                                return LocaleController.getString(R.string.AutoLockDisabled);
+                                return LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, "10 seconds");
                             } else if (value == 1) {
-                                return LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, LocaleController.formatPluralString("Minutes", 1));
+                                return LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, "30 seconds");
                             } else if (value == 2) {
-                                return LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, LocaleController.formatPluralString("Minutes", 5));
+                                return LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, LocaleController.formatPluralString("Minutes", 1));
                             } else if (value == 3) {
-                                return LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, LocaleController.formatPluralString("Hours", 1));
+                                return LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, LocaleController.formatPluralString("Minutes", 5));
                             } else if (value == 4) {
+                                return LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, LocaleController.formatPluralString("Minutes", 15));
+                            } else if (value == 5) {
+                                return LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, LocaleController.formatPluralString("Minutes", 30));
+                            } else if (value == 6) {
+                                return LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, LocaleController.formatPluralString("Hours", 1));
+                            } else if (value == 7) {
                                 return LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, LocaleController.formatPluralString("Hours", 5));
                             }
                             return "";
@@ -360,14 +386,20 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
                         builder.setNegativeButton(LocaleController.getString(R.string.Done), (dialog, which) -> {
                             which = numberPicker.getValue();
                             if (which == 0) {
-                                SharedConfig.autoLockIn = 0;
+                                SharedConfig.autoLockIn = 10;
                             } else if (which == 1) {
-                                SharedConfig.autoLockIn = 60;
+                                SharedConfig.autoLockIn = 30;
                             } else if (which == 2) {
-                                SharedConfig.autoLockIn = 60 * 5;
+                                SharedConfig.autoLockIn = 60;
                             } else if (which == 3) {
-                                SharedConfig.autoLockIn = 60 * 60;
+                                SharedConfig.autoLockIn = 60 * 5;
                             } else if (which == 4) {
+                                SharedConfig.autoLockIn = 60 * 15;
+                            } else if (which == 5) {
+                                SharedConfig.autoLockIn = 60 * 30;
+                            } else if (which == 6) {
+                                SharedConfig.autoLockIn = 60 * 60;
+                            } else if (which == 7) {
                                 SharedConfig.autoLockIn = 60 * 60 * 5;
                             }
                             listAdapter.notifyItemChanged(position);
@@ -386,6 +418,20 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
                         if (!SharedConfig.allowScreenCapture) {
                             AlertsCreator.showSimpleAlert(PasscodeActivity.this, LocaleController.getString(R.string.ScreenCaptureAlert));
                         }
+                    } else if (position == duressPasscodeRow) {
+                        presentFragment(new PasscodeActivity(TYPE_SETUP_CODE, true));
+                    } else if (position == disableDuressPasscodeRow) {
+                        AlertDialog alertDialog = new AlertDialog.Builder(getParentActivity())
+                                .setTitle("Disable duress passcode")
+                                .setMessage("The duress passcode will be removed. Entering it will no longer wipe the app.")
+                                .setNegativeButton(LocaleController.getString(R.string.Cancel), null)
+                                .setPositiveButton(LocaleController.getString(R.string.DisablePasscodeTurnOff), (dialog, which) -> {
+                                    SharedConfig.clearDuressPasscode();
+                                    updateRows();
+                                    listAdapter.notifyDataSetChanged();
+                                }).create();
+                        showDialog(alertDialog);
+                        ((TextView) alertDialog.getButton(Dialog.BUTTON_POSITIVE)).setTextColor(Theme.getColor(Theme.key_text_RedBold));
                     }
                 });
                 break;
@@ -851,6 +897,21 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
         captureHeaderRow = rowCount++;
         captureRow = rowCount++;
         captureDetailRow = rowCount++;
+        if (!SharedConfig.passcodeHash.isEmpty()) {
+            duressHeaderRow = rowCount++;
+            duressPasscodeRow = rowCount++;
+            if (!SharedConfig.duressPasscodeHash.isEmpty()) {
+                disableDuressPasscodeRow = rowCount++;
+            } else {
+                disableDuressPasscodeRow = -1;
+            }
+            duressDetailRow = rowCount++;
+        } else {
+            duressHeaderRow = -1;
+            duressPasscodeRow = -1;
+            disableDuressPasscodeRow = -1;
+            duressDetailRow = -1;
+        }
         disablePasscodeRow = rowCount++;
     }
 
@@ -981,6 +1042,36 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
                 return;
             }
 
+            if (isDuressSetup) {
+                if (SharedConfig.isMainPasscode(firstPassword)) {
+                    AndroidUtilities.updateViewVisibilityAnimated(passcodesDoNotMatchTextView, true);
+                    passcodesDoNotMatchTextView.setText("Duress passcode must differ from your main passcode");
+                    for (CodeNumberField f : codeFieldContainer.codeField) {
+                        f.setText("");
+                    }
+                    if (isPinCode()) {
+                        codeFieldContainer.codeField[0].requestFocus();
+                    }
+                    passwordEditText.setText("");
+                    onPasscodeError();
+                    codeFieldContainer.removeCallbacks(hidePasscodesDoNotMatch);
+                    codeFieldContainer.postDelayed(hidePasscodesDoNotMatch, 3000);
+                    postedHidePasscodesDoNotMatch = true;
+                    passcodeSetStep = 0;
+                    return;
+                }
+                SharedConfig.setDuressPasscode(firstPassword);
+                passwordEditText.clearFocus();
+                AndroidUtilities.hideKeyboard(passwordEditText);
+                for (CodeNumberField f : codeFieldContainer.codeField) {
+                    f.clearFocus();
+                    AndroidUtilities.hideKeyboard(f);
+                }
+                keyboardView.setEditText(null);
+                animateSuccessAnimation(this::finishFragment);
+                return;
+            }
+
             boolean isFirst = SharedConfig.passcodeHash.isEmpty();
             try {
                 SharedConfig.passcodeSalt = new byte[16];
@@ -998,16 +1089,6 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
             SharedConfig.allowScreenCapture = true;
             SharedConfig.passcodeType = currentPasswordType;
             SharedConfig.saveConfig();
-
-            try {
-                byte[] passcodeBytes = firstPassword.getBytes(java.nio.charset.StandardCharsets.UTF_8);
-                for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
-                    DatabaseKeyManager.getInstance(a).onPasscodeSet(passcodeBytes);
-                }
-                java.util.Arrays.fill(passcodeBytes, (byte) 0);
-            } catch (Exception e) {
-                FileLog.e(e);
-            }
 
             passwordEditText.clearFocus();
             AndroidUtilities.hideKeyboard(passwordEditText);
@@ -1123,7 +1204,8 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
         public boolean isEnabled(RecyclerView.ViewHolder holder) {
             int position = holder.getAdapterPosition();
             return position == fingerprintRow || position == autoLockRow || position == captureRow ||
-                    position == changePasscodeRow || position == disablePasscodeRow;
+                    position == changePasscodeRow || position == disablePasscodeRow ||
+                    position == duressPasscodeRow || position == disableDuressPasscodeRow;
         }
 
         @Override
@@ -1181,9 +1263,13 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
                             textCell.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
                         }
                     } else if (position == autoLockRow) {
+                        if (SharedConfig.autoLockIn < 10) {
+                            SharedConfig.autoLockIn = 60;
+                            UserConfig.getInstance(currentAccount).saveConfig(false);
+                        }
                         String val;
-                        if (SharedConfig.autoLockIn == 0) {
-                            val = LocaleController.formatString("AutoLockDisabled", R.string.AutoLockDisabled);
+                        if (SharedConfig.autoLockIn < 60) {
+                            val = LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, SharedConfig.autoLockIn + " seconds");
                         } else if (SharedConfig.autoLockIn < 60 * 60) {
                             val = LocaleController.formatString("AutoLockInTime", R.string.AutoLockInTime, LocaleController.formatPluralString("Minutes", SharedConfig.autoLockIn / 60));
                         } else if (SharedConfig.autoLockIn < 60 * 60 * 24) {
@@ -1198,6 +1284,15 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
                         textCell.setText(LocaleController.getString(R.string.DisablePasscode), false);
                         textCell.setTag(Theme.key_text_RedBold);
                         textCell.setTextColor(Theme.getColor(Theme.key_text_RedBold));
+                    } else if (position == duressPasscodeRow) {
+                        boolean set = !SharedConfig.duressPasscodeHash.isEmpty();
+                        textCell.setText(set ? "Change duress passcode" : "Set duress passcode", set);
+                        textCell.setTag(Theme.key_windowBackgroundWhiteBlackText);
+                        textCell.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+                    } else if (position == disableDuressPasscodeRow) {
+                        textCell.setText("Disable duress passcode", false);
+                        textCell.setTag(Theme.key_text_RedBold);
+                        textCell.setTextColor(Theme.getColor(Theme.key_text_RedBold));
                     }
                     break;
                 }
@@ -1206,6 +1301,8 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
                     cell.setHeight(46);
                     if (position == captureHeaderRow) {
                         cell.setText(LocaleController.getString(R.string.ScreenCaptureHeader));
+                    } else if (position == duressHeaderRow) {
+                        cell.setText("Duress passcode");
                     }
                     break;
                 }
@@ -1227,6 +1324,9 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
                     } else if (position == captureDetailRow) {
                         cell.setText(LocaleController.getString(R.string.ScreenCaptureInfo));
                         cell.getTextView().setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
+                    } else if (position == duressDetailRow) {
+                        cell.setText("Entering this passcode at the lock screen logs out all accounts and wipes the app to a fresh state.");
+                        cell.getTextView().setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
                     }
                     break;
                 }
@@ -1237,11 +1337,13 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
         public int getItemViewType(int position) {
             if (position == fingerprintRow || position == captureRow) {
                 return VIEW_TYPE_CHECK;
-            } else if (position == changePasscodeRow || position == autoLockRow || position == disablePasscodeRow) {
+            } else if (position == changePasscodeRow || position == autoLockRow || position == disablePasscodeRow ||
+                    position == duressPasscodeRow || position == disableDuressPasscodeRow) {
                 return VIEW_TYPE_SETTING;
-            } else if (position == autoLockDetailRow || position == captureDetailRow || position == hintRow) {
+            } else if (position == autoLockDetailRow || position == captureDetailRow || position == hintRow ||
+                    position == duressDetailRow) {
                 return VIEW_TYPE_INFO;
-            } else if (position == captureHeaderRow) {
+            } else if (position == captureHeaderRow || position == duressHeaderRow) {
                 return VIEW_TYPE_HEADER;
             } else if (position == utyanRow) {
                 return VIEW_TYPE_UTYAN;

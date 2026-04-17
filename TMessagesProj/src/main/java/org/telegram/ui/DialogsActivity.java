@@ -3457,7 +3457,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             } else {
                 statusDrawable = new AnimatedEmojiDrawable.SwapAnimatedEmojiDrawable(null, dp(26));
                 statusDrawable.center = true;
-                actionBar.setTitle(getString(R.string.AppName), statusDrawable);
+                actionBar.setTitle("Cinder", statusDrawable);
                 updateStatus(UserConfig.getInstance(currentAccount).getCurrentUser(), false);
             }
             if (folderId == 0) {
@@ -6911,7 +6911,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 }
             }
             if (!alreadyShowing) {
-                presentFragment(new PasscodeActivity(PasscodeActivity.TYPE_SETUP_CODE));
+                presentFragment(new PasscodeActivity(PasscodeActivity.TYPE_SETUP_CODE), false, true);
             }
         }
         if (dialogStoriesCell != null) {
@@ -12221,14 +12221,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         if (StoryRecorder.isVisible() || (getLastStoryViewer() != null && getLastStoryViewer().isFullyVisible())) {
             animated = false;
         }
-        boolean onlySelfStories = !isArchive() && getStoriesController().hasOnlySelfStories();
-        boolean newVisibility;
-        if (isArchive()) {
-            newVisibility = !getStoriesController().getHiddenList().isEmpty();
-        } else {
-            newVisibility = !onlySelfStories && getStoriesController().hasStories();
-            onlySelfStories = getStoriesController().hasOnlySelfStories();
-        }
+        boolean onlySelfStories = false;
+        boolean newVisibility = false;
 
         hasOnlySlefStories = onlySelfStories;
 

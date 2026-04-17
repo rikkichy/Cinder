@@ -1701,28 +1701,14 @@ public class DatabaseMigrationHelper {
         try {
             time = System.currentTimeMillis();
 
-            byte[] dek = DatabaseKeyManager.getInstance(currentAccount).getDek();
-            try {
-                newDatabase = new SQLiteDatabase(cacheFile.getPath(), dek);
-            } catch (Exception e) {
-                FileLog.e(e);
-                if (dek != null) java.util.Arrays.fill(dek, (byte) 0);
-                return false;
-            }
+            newDatabase = new SQLiteDatabase(cacheFile.getPath());
             newDatabase.executeFast("PRAGMA secure_delete = ON").stepThis().dispose();
             newDatabase.executeFast("PRAGMA temp_store = MEMORY").stepThis().dispose();
             newDatabase.executeFast("PRAGMA journal_mode = WAL").stepThis().dispose();
             newDatabase.executeFast("PRAGMA journal_size_limit = 10485760").stepThis().dispose();
 
             MessagesStorage.createTables(newDatabase);
-            StringBuilder hexKey = new StringBuilder();
-            if (dek != null) {
-                for (byte b : dek) {
-                    hexKey.append(String.format("%02x", b & 0xFF));
-                }
-                java.util.Arrays.fill(dek, (byte) 0);
-            }
-            newDatabase.executeFast("ATTACH DATABASE \"" + oldDatabaseFile.getAbsolutePath() + "\" AS old KEY \"x'" + hexKey + "'\";").stepThis().dispose();
+            newDatabase.executeFast("ATTACH DATABASE \"" + oldDatabaseFile.getAbsolutePath() + "\" AS old;").stepThis().dispose();
 
             int version = newDatabase.executeInt("PRAGMA old.user_version");
             if (version != MessagesStorage.LAST_DB_VERSION) {

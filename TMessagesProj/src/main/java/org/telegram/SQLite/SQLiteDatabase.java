@@ -24,12 +24,7 @@ public class SQLiteDatabase {
 	}
 
 	public SQLiteDatabase(String fileName) throws SQLiteException {
-		sqliteHandle = opendb(fileName, ApplicationLoader.getFilesDirFixed().getPath(), null);
-		isOpen = true;
-	}
-
-	public SQLiteDatabase(String fileName, byte[] key) throws SQLiteException {
-		sqliteHandle = opendb(fileName, ApplicationLoader.getFilesDirFixed().getPath(), key);
+		sqliteHandle = opendb(fileName, ApplicationLoader.getFilesDirFixed().getPath());
 		isOpen = true;
 	}
 
@@ -95,11 +90,6 @@ public class SQLiteDatabase {
 		}
 	}
 
-	public void rekey(byte[] key) throws SQLiteException {
-		checkOpened();
-		rekey(sqliteHandle, key);
-	}
-
 	public void finalize() throws Throwable {
         super.finalize();
 		close();
@@ -125,9 +115,8 @@ public class SQLiteDatabase {
         commitTransaction(sqliteHandle);
     }
 
-	native long opendb(String fileName, String tempDir, byte[] key) throws SQLiteException;
+	native long opendb(String fileName, String tempDir) throws SQLiteException;
 	native void closedb(long sqliteHandle) throws SQLiteException;
-	native void rekey(long sqliteHandle, byte[] key) throws SQLiteException;
     native void beginTransaction(long sqliteHandle);
     native void commitTransaction(long sqliteHandle);
 }
